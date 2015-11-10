@@ -14,14 +14,13 @@ import com.readystatesoftware.systembartint.SystemBarTintManager;
  */
 public class TranslucentUtil {
 
-    @TargetApi(19)
+    @TargetApi(20)
     public static  void setTranslucent(Activity activity) {
-        //4.4呵呵呵呵呵呵呵呵呵
+        //KITKAT WILL NOT BE SUPPORTED
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
             activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
         }
     }
-
 
 }

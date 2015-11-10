@@ -30,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        TranslucentUtil.setTranslucent(MainActivity.this);
         setContentView(R.layout.activity_main);
 
         drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
