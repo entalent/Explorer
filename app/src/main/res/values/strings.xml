@@ -11,4 +11,6 @@
     <string name="storage_label_main">Internal Storage</string>
     <string name="storage_label_sdcard">SD Card</string>
     <string name="storage_label_usb">USB Drive</string>
+
+    <string name="loremipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam ligula sapien, fermentum vitae aliquam sed, lacinia in nibh. Pellentesque euismod diam eget justo interdum, sit amet elementum ipsum vulputate.</string>
 </resources>

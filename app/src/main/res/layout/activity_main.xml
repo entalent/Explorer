@@ -37,7 +37,7 @@
             android:layout_height="match_parent"
             android:background="#ffffff"
             >
-
+<!--
             <fragment
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -46,6 +46,25 @@
                 android:layout_centerVertical="true"
                 android:layout_centerHorizontal="true"
                 tools:layout="@layout/fragment_file_list" />
+-->
+
+            <fragment
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:name="cn.edu.bit.cs.explorer.ui.fragment.FileGridFragment"
+                android:id="@+id/fragment2"
+                android:layout_centerHorizontal="true"
+                tools:layout="@layout/fragment_file_grid"
+                android:layout_below="@+id/pathindicator"
+                android:layout_alignParentBottom="true" />
+
+            <cn.edu.bit.cs.explorer.ui.customview.PathIndicator
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/pathindicator"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true" />
+
         </RelativeLayout>
 
     </android.support.design.widget.AppBarLayout>

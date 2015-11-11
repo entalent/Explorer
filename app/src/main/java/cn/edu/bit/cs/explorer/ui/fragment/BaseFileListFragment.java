@@ -70,7 +70,7 @@ public abstract class BaseFileListFragment extends Fragment implements CompoundB
 
     public interface FileListListener {
         public void OnOpenFileOrDirectory(File file);
-        public void OnSelectedFileChange(File file, boolean selected);
+        public void OnSelectedFileChange(ArrayList<File> selectedFiles);
     }
 
     static final int MSG_REFRESH_LIST = 0x0;
@@ -108,10 +108,21 @@ public abstract class BaseFileListFragment extends Fragment implements CompoundB
         this.setCurrentDirectory(rootPath);
     }
 
-    public void setCurrentDirectory (String canonicalPath) {
+    public File getRootDirectory(){
+        return this.rootPath;
+    }
+
+
+    /**
+     *
+     * @param absolutePath the canonical path to root path
+     */
+    public void setCurrentDirectory (String absolutePath) {
         if(rootPath == null)
             throw new RuntimeException("root path not specified");
-        setCurrentDirectory(new File(rootPath, canonicalPath));
+        if(!absolutePath.startsWith(rootPath.getAbsolutePath()))
+            throw new IllegalArgumentException("current directory is not child directory of root directory");
+        setCurrentDirectory(new File(absolutePath));
     }
 
     protected void setCurrentDirectory (final File currentDirectory){
@@ -166,7 +177,7 @@ public abstract class BaseFileListFragment extends Fragment implements CompoundB
             selectedFiles.remove(file);
         }
         if(fileListListener != null)
-            fileListListener.OnSelectedFileChange(file, isChecked);
+            fileListListener.OnSelectedFileChange(selectedFiles);
     }
 
     @Override
@@ -181,6 +192,25 @@ public abstract class BaseFileListFragment extends Fragment implements CompoundB
         if(!isInRootDirectory){
             openFileOrDirectory(currentPath.getParentFile());
         }
+    }
+
+    public void selectAll() {
+        selectedFiles.addAll(filesInCurrentDir);
+        if(!isInRootDirectory){
+            selectedFiles.remove(0);
+        }
+        notifySelectionChanged();
+    }
+
+    public void deselectAll() {
+        selectedFiles.clear();
+        notifySelectionChanged();
+    }
+
+    void notifySelectionChanged(){
+        ((BaseAdapter)adapterView.getAdapter()).notifyDataSetChanged();
+        if(fileListListener != null)
+            fileListListener.OnSelectedFileChange(selectedFiles);
     }
 
     protected void openFileOrDirectory(File currentFile) {

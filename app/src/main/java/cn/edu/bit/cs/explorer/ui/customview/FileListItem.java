@@ -19,6 +19,11 @@ import cn.edu.bit.cs.explorer.util.TextUtil;
  */
 public class FileListItem extends RelativeLayout {
 
+    public static final int MODE_LIST_ITEM = 0x0,
+                        MODE_GRID_ITEM = 0x1;
+
+    int layoutMode = MODE_LIST_ITEM;
+
     boolean isParentDirectory;
     File file;
 
@@ -28,7 +33,22 @@ public class FileListItem extends RelativeLayout {
 
     public FileListItem(Context context, AttributeSet attrs) {
         super(context, attrs);
-        LayoutInflater.from(context).inflate(R.layout.view_file_list_item, this);
+
+    }
+
+    public FileListItem(Context context, int mode) {
+        super(context);
+        layoutMode = mode;
+        if(layoutMode != MODE_LIST_ITEM && layoutMode != MODE_GRID_ITEM)
+            throw new IllegalArgumentException("mode should be MODE_LIST_ITEM or MODE_GRID_ITEM");
+        if(mode == MODE_LIST_ITEM)
+            LayoutInflater.from(context).inflate(R.layout.view_file_list_item, this);
+        else if(mode == MODE_GRID_ITEM)
+            LayoutInflater.from(context).inflate(R.layout.view_file_grid_item, this);
+        initUI();
+    }
+
+    void initUI() {
         icon = (ImageView) findViewById(R.id.imageView);
         checkBox = (CheckBox) findViewById(R.id.checkBox);
         textName = (TextView)findViewById(R.id.text_name);
