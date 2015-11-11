@@ -17,9 +17,6 @@ import java.util.ArrayList;
  */
 public class StorageUtil {
 
-    static String[] UNIT_STR = {
-            "B", "KB", "MB", "GB", "TB"
-    };
 
     /**
      *
@@ -53,14 +50,42 @@ public class StorageUtil {
         return paths;
     }
 
-    public static String formatSizeStr(long sizeLong){
-        double size = sizeLong;
-        int unit = 0;
-        while(unit < UNIT_STR.length && size >= 1024){
-            size /= 1024.0;
-            unit++;
+
+
+    public static class StorageVolumeInfo {
+
+        StatFs fs;
+        /** the path to the storage volume */
+        public String path;
+        /** the available size */
+        public long availableBytes;
+        /** the total size */
+        public long totalBytes;
+
+        public StorageVolumeInfo(String path){
+            fs = new StatFs(path);
+            this.path = path;
+            this.availableBytes = updateAvailableBytes();
+            this.totalBytes = updateTotalBytes();
         }
-        return String.format("%.2f %s", size, UNIT_STR[unit]);
+
+        /**
+         * judge a volume is available by the available size
+         * @return whether the storage volume is mounted
+         */
+        public boolean isAvailableVolume(){
+            return totalBytes > 0;
+        }
+
+        long updateAvailableBytes() {
+            this.availableBytes = ((long)fs.getAvailableBlocks()) * fs.getBlockSize();
+            return this.availableBytes;
+        }
+
+        long updateTotalBytes() {
+            this.totalBytes = ((long)fs.getBlockCount() * fs.getBlockSize());
+            return this.totalBytes;
+        }
     }
 
 }

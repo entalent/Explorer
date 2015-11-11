@@ -2,6 +2,7 @@ package cn.edu.bit.cs.explorer;
 
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -11,11 +12,12 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.ArrayList;
 
-import cn.edu.bit.cs.explorer.customview.StorageVolumeLabel;
+import cn.edu.bit.cs.explorer.ui.customview.StorageVolumeLabel;
+import cn.edu.bit.cs.explorer.ui.fragment.BaseFileListFragment;
 import cn.edu.bit.cs.explorer.util.StorageUtil;
-import cn.edu.bit.cs.explorer.util.StorageVolumeInfo;
 import cn.edu.bit.cs.explorer.util.TranslucentUtil;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,7 +27,9 @@ public class MainActivity extends AppCompatActivity {
     Toolbar toolbar;
     LinearLayout storageVolumeList, optionsList;
 
-    ArrayList<StorageVolumeInfo> volumes = new ArrayList<>();
+    BaseFileListFragment fragment;
+
+    ArrayList<StorageUtil.StorageVolumeInfo> volumes = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +42,9 @@ public class MainActivity extends AppCompatActivity {
         storageVolumeList = (LinearLayout) findViewById(R.id.linearLayout1);
         optionsList = (LinearLayout)findViewById(R.id.linearLayout2);
 
+        fragment = (BaseFileListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
+
+
         setSupportActionBar(toolbar);
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout,
@@ -49,12 +56,14 @@ public class MainActivity extends AppCompatActivity {
         TranslucentUtil.setTranslucent(MainActivity.this);
 
         refreshStorageVolume();
+
+        fragment.setRootDirectory(new File(volumes.get(0).path));
     }
 
     public void refreshStorageVolume() {
         storageVolumeList.removeAllViews();
         volumes = StorageUtil.getVolumePaths(MainActivity.this);
-        for(StorageVolumeInfo i : volumes){
+        for(StorageUtil.StorageVolumeInfo i : volumes){
             StorageVolumeLabel label = new StorageVolumeLabel(MainActivity.this, null);
             label.setVolumeInfo(i);
             storageVolumeList.addView(label);
@@ -67,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             StorageVolumeLabel label = (StorageVolumeLabel)v;
             Toast.makeText(MainActivity.this, label.getVolumeInfo().path, Toast.LENGTH_SHORT).show();
+            fragment.setRootDirectory(new File(((StorageVolumeLabel) v).getVolumeInfo().path));
             drawerLayout.closeDrawer(GravityCompat.START);
         }
     };

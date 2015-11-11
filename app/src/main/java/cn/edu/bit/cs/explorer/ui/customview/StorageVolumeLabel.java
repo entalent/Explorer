@@ -1,24 +1,17 @@
-package cn.edu.bit.cs.explorer.customview;
+package cn.edu.bit.cs.explorer.ui.customview;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
 import android.os.Environment;
-import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import cn.edu.bit.cs.explorer.R;
 import cn.edu.bit.cs.explorer.util.StorageUtil;
-import cn.edu.bit.cs.explorer.util.StorageVolumeInfo;
+import cn.edu.bit.cs.explorer.util.TextUtil;
 
 /**
  * TODO: document your custom view class.
@@ -29,7 +22,7 @@ public class StorageVolumeLabel extends LinearLayout {
     TextView textPath;
     TextView textSpace;
     ImageView img;
-    StorageVolumeInfo info;
+    StorageUtil.StorageVolumeInfo info;
 
     public StorageVolumeLabel(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -40,7 +33,7 @@ public class StorageVolumeLabel extends LinearLayout {
         img = (ImageView)findViewById(R.id.imageView);
     }
 
-    public void setVolumeInfo(StorageVolumeInfo info){
+    public void setVolumeInfo(StorageUtil.StorageVolumeInfo info){
         this.info = info;
         Resources res = getContext().getResources();
         if(info.path.equals(Environment.getExternalStorageDirectory().getAbsolutePath())){
@@ -54,11 +47,11 @@ public class StorageVolumeLabel extends LinearLayout {
             img.setImageDrawable(res.getDrawable(R.drawable.ic_sd_storage_black_36dp));
         }
         textPath.setText(info.path);
-        textSpace.setText(StorageUtil.formatSizeStr(info.availableBytes) +  "/" +
-                StorageUtil.formatSizeStr(info.totalBytes));
+        textSpace.setText(TextUtil.formatSizeStr(info.availableBytes) +  "/" +
+                TextUtil.formatSizeStr(info.totalBytes));
     }
 
-    public StorageVolumeInfo getVolumeInfo(){
+    public StorageUtil.StorageVolumeInfo getVolumeInfo(){
         return info;
     }
 }
