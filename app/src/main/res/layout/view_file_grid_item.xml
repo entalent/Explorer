@@ -16,7 +16,7 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:id="@+id/imageView"
-        android:src="@drawable/ic_sd_storage_black_36dp"
+        android:src="@drawable/ic_insert_drive_file_black_24dp"
         android:padding="10dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />

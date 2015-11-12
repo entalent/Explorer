@@ -8,6 +8,8 @@
     <string name="drawer_title_storage">storage volume</string>
     <string name="drawer_title_options">options</string>
 
+    <string name="drawer_menu_settings">settings</string>
+
     <string name="storage_label_main">Internal Storage</string>
     <string name="storage_label_sdcard">SD Card</string>
     <string name="storage_label_usb">USB Drive</string>

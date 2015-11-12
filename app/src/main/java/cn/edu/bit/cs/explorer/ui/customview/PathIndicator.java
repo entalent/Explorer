@@ -94,7 +94,7 @@ public class PathIndicator extends LinearLayout implements View.OnClickListener{
         textView.setTextColor(Color.BLACK);
         textView.setPadding(10, 10, 10, 10);
     }
-    
+
     @Override
     public void onClick(View v) {
         String path = (String) v.getTag();

@@ -160,10 +160,17 @@ public abstract class BaseFileListFragment extends Fragment implements CompoundB
     }
 
     void refreshFileList(){
-        FileListAdapter adapter = (FileListAdapter) adapterView.getAdapter();
+        final FileListAdapter adapter = (FileListAdapter) adapterView.getAdapter();
         if(adapter != null){
             adapter.notifyDataSetChanged();
         }
+        this.adapterView.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //TODO: not working?!?
+                adapterView.scrollTo(0, 0);
+            }
+        }, 100);
     }
 
 

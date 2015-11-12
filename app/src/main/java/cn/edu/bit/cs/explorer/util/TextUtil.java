@@ -1,5 +1,9 @@
 package cn.edu.bit.cs.explorer.util;
 
+import android.net.Uri;
+import android.webkit.MimeTypeMap;
+
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -29,5 +33,18 @@ public class TextUtil {
         Date date = new Date();
         date.setTime(time);
         return simpleDateFormat.format(date);
+    }
+
+    public static String getMimeTypeFromFile(File file){
+        return getMimeType(Uri.fromFile(file).toString());
+    }
+
+    public static String getMimeType(String url) {
+        String type = null;
+        String extension = MimeTypeMap.getFileExtensionFromUrl(url);
+        if (extension != null) {
+            type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+        }
+        return type;
     }
 }
