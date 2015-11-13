@@ -9,10 +9,17 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
 
+import java.util.Queue;
+
+import cn.edu.bit.cs.explorer.ui.customview.FileListItem;
+
 /**
  * Created by entalent on 2015/11/12.
  */
 public class FileIconUtil {
+
+
+
     public static Drawable getApkIcon(Context context, String apkPath) {
         PackageManager pm = context.getPackageManager();
         PackageInfo info = pm.getPackageArchiveInfo(apkPath,

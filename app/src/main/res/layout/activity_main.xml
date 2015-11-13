@@ -37,17 +37,18 @@
             android:layout_height="match_parent"
             android:background="#ffffff"
             >
-<!--
+
             <fragment
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:name="cn.edu.bit.cs.explorer.ui.fragment.FileListFragment"
                 android:id="@+id/fragment"
-                android:layout_centerVertical="true"
                 android:layout_centerHorizontal="true"
-                tools:layout="@layout/fragment_file_list" />
--->
+                android:layout_below="@+id/pathindicator"
+                tools:layout="@layout/fragment_file_list"
+                android:layout_above="@+id/linearLayout3" />
 
+<!--
             <fragment
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -57,13 +58,99 @@
                 tools:layout="@layout/fragment_file_grid"
                 android:layout_below="@+id/pathindicator"
                 android:layout_alignParentBottom="true" />
-
+-->
             <cn.edu.bit.cs.explorer.ui.customview.PathIndicator
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/pathindicator"
                 android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true" />
+
+
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:visibility="gone"
+                android:id="@+id/linearLayout3">
+
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Copy"
+                    android:id="@+id/button" />
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Paste"
+                    android:id="@+id/button2" />
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Delete"
+                    android:id="@+id/button3" />
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:layout_above="@+id/linearLayout3">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/menu_buttons"
+                    android:visibility="invisible"
+                    android:layout_above="@+id/fab"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true">
+
+                    <android.support.design.widget.FloatingActionButton android:id="@+id/fab1"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:src="@drawable/ic_folder_white_18dp"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_margin="20dp"
+                        android:layout_alignParentEnd="true"
+                        android:tag="newfolder"/>
+                    <android.support.design.widget.FloatingActionButton android:id="@+id/fab2"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:src="@drawable/ic_note_add_white_18dp"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_margin="20dp"
+                        android:layout_alignParentEnd="true"
+                        android:tag="newfile"/>
+
+                    <android.support.design.widget.FloatingActionButton android:id="@+id/fab3"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:src="@drawable/ic_search_white_18dp"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_margin="20dp"
+                        android:onClick="search"
+                        android:layout_alignParentEnd="true"
+                        android:tag="newfile"/>
+
+                </LinearLayout>
+
+
+                <android.support.design.widget.FloatingActionButton android:id="@+id/fab"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:src="@drawable/ic_add_circle_white_18dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_margin="20dp"
+                    android:layout_alignParentEnd="true" />
+            </RelativeLayout>
 
         </RelativeLayout>
 

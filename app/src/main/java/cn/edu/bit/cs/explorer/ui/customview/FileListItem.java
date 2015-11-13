@@ -36,22 +36,24 @@ public class FileListItem extends RelativeLayout {
 
     public FileListItem(Context context, AttributeSet attrs) {
         super(context, attrs);
-
+        initUI();
     }
 
     public FileListItem(Context context, int mode) {
         super(context);
         layoutMode = mode;
-        if(layoutMode != MODE_LIST_ITEM && layoutMode != MODE_GRID_ITEM)
-            throw new IllegalArgumentException("mode should be MODE_LIST_ITEM or MODE_GRID_ITEM");
-        if(mode == MODE_LIST_ITEM)
-            LayoutInflater.from(context).inflate(R.layout.view_file_list_item, this);
-        else if(mode == MODE_GRID_ITEM)
-            LayoutInflater.from(context).inflate(R.layout.view_file_grid_item, this);
+
         initUI();
     }
 
     void initUI() {
+        if(layoutMode != MODE_LIST_ITEM && layoutMode != MODE_GRID_ITEM)
+            throw new IllegalArgumentException("mode should be MODE_LIST_ITEM or MODE_GRID_ITEM");
+        if(layoutMode == MODE_LIST_ITEM)
+            LayoutInflater.from(getContext()).inflate(R.layout.view_file_list_item, this);
+        else if(layoutMode == MODE_GRID_ITEM)
+            LayoutInflater.from(getContext()).inflate(R.layout.view_file_grid_item, this);
+
         icon = (ImageView) findViewById(R.id.imageView);
         checkBox = (CheckBox) findViewById(R.id.checkBox);
         textName = (TextView)findViewById(R.id.text_name);
@@ -72,7 +74,7 @@ public class FileListItem extends RelativeLayout {
                     textSize.setText("");
                 }
                 if(textDetail != null){
-                    textDetail.setText("");
+                    textDetail.setText(getResources().getString(R.string.file_list_item_parent_folder));
                 }
                 checkBox.setVisibility(View.INVISIBLE);
             } else {
@@ -83,7 +85,6 @@ public class FileListItem extends RelativeLayout {
                     textSize.setText("");
                 }
                 if (textDetail != null) {
-                    //textDetail.setText(f.getAbsolutePath());
                     textDetail.setText(TextUtil.formatTimeStr(f.lastModified()));
                 }
                 checkBox.setVisibility(View.VISIBLE);
@@ -107,8 +108,6 @@ public class FileListItem extends RelativeLayout {
 
     public void setIsParentDirectory(boolean isParentDirectory){
         this.isParentDirectory = isParentDirectory;
-        if(isParentDirectory)
-            System.out.println(this.file.getAbsolutePath());
         if(isParentDirectory && (!this.file.isDirectory())){
             throw new IllegalStateException("parent file should be a directory");
         }
@@ -120,47 +119,29 @@ public class FileListItem extends RelativeLayout {
     }
 
     private void setIcon() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Resources resources = getContext().getResources();
-                if(file.isDirectory()){
-                    //icon.setImageDrawable(resources.getDrawable(R.drawable.ic_folder_black_36dp));
-                    icon.post(new SetIconThread(icon, resources.getDrawable(R.drawable.ic_folder_black_36dp)));
-                } else {
-                    String mimeType = TextUtil.getMimeTypeFromFile(file);
-                    if(mimeType == null){
-                        icon.post(new SetIconThread(icon, resources.getDrawable(R.drawable.ic_insert_drive_file_black_24dp)));
-                    } else if(mimeType.contains("audio")){ //audio
-                        //TODO: Album artwork?
-                        icon.post(new SetIconThread(icon, resources.getDrawable(R.drawable.ic_library_music_black_36dp)));
-                    } else if(mimeType.contains("video")){ //video
-                        //TODO: Video thumbnail?
-                        icon.post(new SetIconThread(icon, resources.getDrawable(R.drawable.ic_movie_black_36dp)));
-                    } else if(mimeType.contains("vnd.android.package-archive")){ //apk
-                        icon.post(new SetIconThread(icon, FileIconUtil.getApkIcon(getContext(), file.getAbsolutePath())));
-                    } else if(mimeType.contains("image")){
-                        //TODO: Image thumbnail?
-                    } else {
-                        icon.post(new SetIconThread(icon, resources.getDrawable(R.drawable.ic_insert_drive_file_black_24dp)));
-                    }
-                }
+        Resources resources = getContext().getResources();
+        Drawable iconDrawable = resources.getDrawable(R.drawable.ic_insert_drive_file_black_24dp);
+        if(file.isDirectory()){
+            iconDrawable = resources.getDrawable(R.drawable.ic_folder_black_36dp);
+        } else {
+            String mimeType = TextUtil.getMimeTypeFromFile(file);
+            if(mimeType == null){
+                iconDrawable = resources.getDrawable(R.drawable.ic_insert_drive_file_black_24dp);
+            } else if(mimeType.contains("audio")){ //audio
+                //TODO: Album Artwork?
+                iconDrawable = resources.getDrawable(R.drawable.ic_library_music_black_36dp);
+            } else if(mimeType.contains("video")){ //video
+                //TODO: Video thumbnail?
+                iconDrawable = resources.getDrawable(R.drawable.ic_movie_black_36dp);
+            } else if(mimeType.contains("vnd.android.package-archive")){ //apk
+                iconDrawable = FileIconUtil.getApkIcon(getContext(), file.getAbsolutePath());
+            } else if(mimeType.contains("image")){
+                //TODO: Image thumbnail?
+            } else {
+                iconDrawable = resources.getDrawable(R.drawable.ic_insert_drive_file_black_24dp);
             }
-        }).start();
+        }
+        icon.setImageDrawable(iconDrawable);
     }
 
-    class SetIconThread implements Runnable {
-        ImageView imageView;
-        Drawable drawable;
-
-        public SetIconThread(ImageView imageView, Drawable drawable) {
-            this.imageView = imageView;
-            this.drawable = drawable;
-        }
-
-        @Override
-        public void run() {
-            imageView.setImageDrawable(drawable);
-        }
-    }
 }

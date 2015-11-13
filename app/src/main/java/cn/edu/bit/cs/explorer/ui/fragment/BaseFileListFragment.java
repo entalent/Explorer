@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,15 +55,16 @@ public abstract class BaseFileListFragment extends Fragment implements CompoundB
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            FileListItem item = (FileListItem)convertView;
+            FileListItem item = /*(FileListItem)convertView;
             if(item == null)
-                item = getNewFileListItem();
+                item =*/ getNewFileListItem();
             File currentFile = filesInCurrentDir.get(position);
             item.setFile(currentFile);
+            Log.e("TAG", position + " " + currentFile.getAbsolutePath());
             item.setIsParentDirectory(position == 0 && (!isInRootDirectory));
             item.setOnClickListener(BaseFileListFragment.this);
             item.getCheckBox().setOnCheckedChangeListener(BaseFileListFragment.this);
-            item.getCheckBox().setTag(Integer.valueOf(position));
+            item.getCheckBox().setTag(new Integer(position));
             item.getCheckBox().setChecked(selectedFiles.contains(currentFile));
             return item;
         }
@@ -72,19 +74,6 @@ public abstract class BaseFileListFragment extends Fragment implements CompoundB
         public void OnOpenFileOrDirectory(File file);
         public void OnSelectedFileChange(ArrayList<File> selectedFiles);
     }
-
-    static final int MSG_REFRESH_LIST = 0x0;
-
-    final Handler handler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            if(msg.what == MSG_REFRESH_LIST){
-                refreshFileList();
-            }
-        }
-    };
-
 
 
     protected abstract FileListItem getNewFileListItem();
@@ -112,11 +101,6 @@ public abstract class BaseFileListFragment extends Fragment implements CompoundB
         return this.rootPath;
     }
 
-
-    /**
-     *
-     * @param absolutePath the canonical path to root path
-     */
     public void setCurrentDirectory (String absolutePath) {
         if(rootPath == null)
             throw new RuntimeException("root path not specified");
@@ -126,6 +110,7 @@ public abstract class BaseFileListFragment extends Fragment implements CompoundB
     }
 
     protected void setCurrentDirectory (final File currentDirectory){
+        adapterView.setSelection(0);
         if((!currentDirectory.isDirectory()) || (!currentDirectory.exists())){
             this.currentPath = rootPath;
         } else {
@@ -133,44 +118,37 @@ public abstract class BaseFileListFragment extends Fragment implements CompoundB
         }
 
         selectedFiles.clear();
+        refreshFileList();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                filesInCurrentDir.clear();
-                File[] files = currentDirectory.listFiles();
-                Arrays.sort(files);
-                if(currentPath.equals(rootPath)){
-                    isInRootDirectory = true;
-                } else {
-                    isInRootDirectory = false;
-                    filesInCurrentDir.add(currentPath.getParentFile());
-                }
-                for(File i : files){
-                    filesInCurrentDir.add(i);
-                }
+        filesInCurrentDir.clear();
+        File[] files = currentPath.listFiles();
+        Arrays.sort(files);
+        Log.e("TAG", currentPath + " " + rootPath + " " + currentPath.equals(rootPath));
+        if(currentPath.equals(rootPath)){
+            isInRootDirectory = true;
+        } else {
+            isInRootDirectory = false;
+            filesInCurrentDir.add(currentPath.getParentFile());
+        }
+        for(File i : files){
+            filesInCurrentDir.add(i);
+        }
 
-                Message msg = new Message();
-                msg.what = MSG_REFRESH_LIST;
-                handler.sendMessage(msg);
-            }
-        }).start();
-
-
+        refreshFileList();
     }
 
-    void refreshFileList(){
+    public void setFilesToShow(ArrayList<File> files){
+        filesInCurrentDir = files;
+        refreshFileList();
+    }
+
+    public void refreshFileList(){
         final FileListAdapter adapter = (FileListAdapter) adapterView.getAdapter();
         if(adapter != null){
             adapter.notifyDataSetChanged();
         }
-        this.adapterView.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                //TODO: not working?!?
-                adapterView.scrollTo(0, 0);
-            }
-        }, 100);
+        adapterView.setSelection(0);
+        adapterView.scrollTo(0, 0);
     }
 
 
@@ -178,10 +156,12 @@ public abstract class BaseFileListFragment extends Fragment implements CompoundB
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         int index = (Integer) buttonView.getTag();
         File file = filesInCurrentDir.get(index);
-        if(isChecked){
+        if(isChecked && (!selectedFiles.contains(file))) {
             selectedFiles.add(file);
-        } else {
+        } else if(!isChecked) {
             selectedFiles.remove(file);
+        } else {
+            return ;
         }
         if(fileListListener != null)
             fileListListener.OnSelectedFileChange(selectedFiles);
@@ -191,6 +171,7 @@ public abstract class BaseFileListFragment extends Fragment implements CompoundB
     public void onClick(View v) {
         FileListItem item = (FileListItem)v;
         int index = (int) item.getCheckBox().getTag();
+        Log.e("TAG", "onclick " + index);
         File currentFile = filesInCurrentDir.get(index);
         openFileOrDirectory(currentFile);
     }
@@ -215,15 +196,15 @@ public abstract class BaseFileListFragment extends Fragment implements CompoundB
     }
 
     void notifySelectionChanged(){
-        ((BaseAdapter)adapterView.getAdapter()).notifyDataSetChanged();
         if(fileListListener != null)
             fileListListener.OnSelectedFileChange(selectedFiles);
     }
 
     protected void openFileOrDirectory(File currentFile) {
         currentFile = currentFile.getAbsoluteFile();
-        if(currentFile.isDirectory())
+        if(currentFile.isDirectory()) {
             this.setCurrentDirectory(currentFile);
+        }
         if(fileListListener != null)
             fileListListener.OnOpenFileOrDirectory(currentFile);
     }

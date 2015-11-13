@@ -9,5 +9,6 @@
         android:id="@+id/gridView"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
+        android:transcriptMode="normal"
         android:numColumns="auto_fit" />
 </RelativeLayout>
