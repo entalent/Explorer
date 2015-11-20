@@ -42,7 +42,6 @@ public class FileListItem extends RelativeLayout {
     public FileListItem(Context context, int mode) {
         super(context);
         layoutMode = mode;
-
         initUI();
     }
 
@@ -66,18 +65,7 @@ public class FileListItem extends RelativeLayout {
         if(this.file == null)
             return ;
         if(f.isDirectory()){
-            if(isParentDirectory){
-                if(textName != null){
-                    textName.setText("..");
-                }
-                if(textSize != null){
-                    textSize.setText("");
-                }
-                if(textDetail != null){
-                    textDetail.setText(getResources().getString(R.string.file_list_item_parent_folder));
-                }
-                checkBox.setVisibility(View.INVISIBLE);
-            } else {
+
                 if (textName != null) {
                     textName.setText(f.getName());
                 }
@@ -88,7 +76,7 @@ public class FileListItem extends RelativeLayout {
                     textDetail.setText(TextUtil.formatTimeStr(f.lastModified()));
                 }
                 checkBox.setVisibility(View.VISIBLE);
-            }
+
 
         } else {
             if(textName != null){
@@ -111,7 +99,18 @@ public class FileListItem extends RelativeLayout {
         if(isParentDirectory && (!this.file.isDirectory())){
             throw new IllegalStateException("parent file should be a directory");
         }
-        setFile(this.file);
+        if(isParentDirectory){
+            if(textName != null){
+                textName.setText("..");
+            }
+            if(textSize != null){
+                textSize.setText("");
+            }
+            if(textDetail != null){
+                textDetail.setText(getResources().getString(R.string.file_list_item_parent_folder));
+            }
+            checkBox.setVisibility(View.INVISIBLE);
+        }
     }
 
     public CheckBox getCheckBox(){

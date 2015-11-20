@@ -1,6 +1,7 @@
 <android.support.v4.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/drawer_layout"
@@ -15,24 +16,35 @@
         android:orientation="vertical"
         android:theme="@style/AppTheme.AppBarOverlay">
 
+        
+
+
         <android.support.v7.widget.Toolbar
             android:id="@+id/id_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/colorPrimary"
             android:fitsSystemWindows="true"
-            app:popupTheme="@style/AppTheme.PopupOverlay"
+            app:popupTheme="@style/Theme.AppCompat.Light"
             />
 
 
-        <TextView
-            android:id="@+id/id_tv_content"
+        <cn.edu.bit.cs.explorer.ui.customview.PathIndicator
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="HelloWorld"
-            android:textSize="30sp"/>
+            android:layout_height="40dp"
+            android:id="@+id/path_indicator"
+            android:layout_gravity="center_horizontal"
+            />
+
+        <fragment
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:name="cn.edu.bit.cs.explorer.ui.fragment.BaseFileListFragment"
+            android:id="@+id/fragment"
+            android:layout_gravity="center_horizontal"
+            tools:layout="@layout/fragment_file_list" />
+
+
     </LinearLayout>
 
 
