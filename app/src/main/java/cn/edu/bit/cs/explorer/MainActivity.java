@@ -27,6 +27,11 @@ public class MainActivity extends AppCompatActivity implements BaseFileListFragm
 
     BaseFileListFragment fragment;
 
+    ActionMode actionMode;
+
+    int prevSelectedFileCnt = 0;
+    ArrayList<File> selectedFiles;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -54,18 +59,74 @@ public class MainActivity extends AppCompatActivity implements BaseFileListFragm
 
     @Override
     public void onOpenFileOrDirectory(File file) {
-        Toast.makeText(MainActivity.this, file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
         if(file.isDirectory())
             indicator.setCurrentDir(file);
     }
 
     @Override
     public void onSelectedFilesChange(ArrayList<File> files) {
-        Toast.makeText(MainActivity.this, files.size() + "", Toast.LENGTH_SHORT).show();
+        this.selectedFiles = files;
+        /*
+        Exception e = new Exception();
+        e.printStackTrace(System.out);
+        System.out.println("onSelectedFilesChange");
+        */
+        for(File i : files){
+            System.out.println(i.getAbsolutePath());
+        }
+        if(files.size() > 0 && prevSelectedFileCnt == 0) {
+            actionMode = toolbar.startActionMode(actionModeCallback);
+        } else if(files.size() == 0) {
+            actionMode.finish();
+        }
+        prevSelectedFileCnt = files.size();
     }
 
     @Override
     public void onPathChange(File file) {
         fragment.setCurrentDir(file);
+    }
+
+    ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            menu.clear();
+            menu.add("copy").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
+            menu.add("cut").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
+            menu.add("delete").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+            if(selectedFiles.size() == 1){
+                menu.add("rename").setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+            }
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            if(item.getTitle().equals("copy")){
+
+            } else if (item.getTitle().equals("cut")){
+
+            } else if (item.getTitle().equals("delete")){
+
+            } else if (item.getTitle().equals("rename")){
+
+            }
+            return true;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+
+        }
+    };
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return super.onCreateOptionsMenu(menu);
     }
 }

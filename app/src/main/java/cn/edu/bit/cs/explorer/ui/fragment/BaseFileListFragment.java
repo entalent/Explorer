@@ -60,20 +60,25 @@ public class BaseFileListFragment extends Fragment
             if(item == null){
                 item = new FileListItem(getContext(), null);
             }
+            item.getCheckBox().setOnCheckedChangeListener(null);
             if(!isInRootDir){
                 if(position == 0){
                     item.setFile(currentDir.getParentFile());
                     item.setIsParentDirectory(true);
                 } else {
-                    item.setFile(filesInCurrentDir.get(position - 1));
+                    File currentFile = filesInCurrentDir.get(position - 1);
+                    item.setFile(currentFile);
+                    item.getCheckBox().setChecked(isSelectedFile(currentFile));
                 }
             } else {
-                item.setFile(filesInCurrentDir.get(position));
+                File currentFile = filesInCurrentDir.get(position);
+                item.setFile(currentFile);
+                item.getCheckBox().setChecked(isSelectedFile(currentFile));
             }
-            item.getCheckBox().setOnCheckedChangeListener(BaseFileListFragment.this);
             item.setTag(new Integer(position));
             item.getCheckBox().setTag(new Integer(position));
             item.setOnClickListener(BaseFileListFragment.this);
+            item.getCheckBox().setOnCheckedChangeListener(BaseFileListFragment.this);
             return item;
         }
     }
@@ -82,7 +87,6 @@ public class BaseFileListFragment extends Fragment
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         Integer position = (Integer)(buttonView.getTag());
 
-
         if(!isInRootDir)
             position--;
         if(isChecked)
@@ -90,7 +94,6 @@ public class BaseFileListFragment extends Fragment
         else
             selectedFiles.remove(filesInCurrentDir.get(position));
         invokeOnSelectedFilesChange();
-
     }
 
     @Override
@@ -143,6 +146,7 @@ public class BaseFileListFragment extends Fragment
 
         filesInCurrentDir.clear();
         selectedFiles.clear();
+        invokeOnSelectedFilesChange();
         File[] files = currentDir.listFiles();
         for(File i : files){
             filesInCurrentDir.add(i);
@@ -161,6 +165,14 @@ public class BaseFileListFragment extends Fragment
         } else {
 
         }
+    }
+
+    public boolean isSelectedFile(File file) {
+        for(File i : selectedFiles){
+            if(i.getAbsolutePath().equals(file.getAbsolutePath()))
+                return true;
+        }
+        return false;
     }
 
     public void invokeOnOpenFileOrDirectory(File file) {

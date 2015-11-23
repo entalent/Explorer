@@ -16,16 +16,16 @@
         android:orientation="vertical"
         android:theme="@style/AppTheme.AppBarOverlay">
 
-        
+
 
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/id_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:theme="@style/MyActionBarTheme"
             android:background="?attr/colorPrimary"
             android:fitsSystemWindows="true"
-            app:popupTheme="@style/Theme.AppCompat.Light"
             />
 
 

@@ -110,6 +110,7 @@ public class FileListItem extends RelativeLayout {
                 textDetail.setText(getResources().getString(R.string.file_list_item_parent_folder));
             }
             checkBox.setVisibility(View.INVISIBLE);
+            checkBox.setChecked(false);
         }
     }
 
