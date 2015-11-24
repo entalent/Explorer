@@ -126,6 +126,10 @@ public class BaseFileListFragment extends Fragment
         ((BaseAdapter)adapterView.getAdapter()).notifyDataSetChanged();
     }
 
+    public void refreshCurrentDir() {
+        setCurrentDir(currentDir);
+    }
+
     public void setRootDir(File rootDir){
         this.rootDir = rootDir;
         setCurrentDir(rootDir);
@@ -165,6 +169,10 @@ public class BaseFileListFragment extends Fragment
         } else {
 
         }
+    }
+
+    public File getCurrentDir() {
+        return currentDir;
     }
 
     public boolean isSelectedFile(File file) {

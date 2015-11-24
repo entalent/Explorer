@@ -1,7 +1,5 @@
 package cn.edu.bit.cs.explorer;
 
-import android.app.ActionBar;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.widget.DrawerLayout;
@@ -18,8 +16,16 @@ import java.util.ArrayList;
 
 import cn.edu.bit.cs.explorer.ui.customview.PathIndicator;
 import cn.edu.bit.cs.explorer.ui.fragment.BaseFileListFragment;
+import cn.edu.bit.cs.explorer.util.FileUtil;
 
 public class MainActivity extends AppCompatActivity implements BaseFileListFragment.FileListListener, PathIndicator.OnPathChangeListener{
+
+    static final int ACTION_COPY = 0x0;
+    static final int ACTION_CUT = 0x1;
+
+    static final int STATE_NONE = 0x0;
+    static final int STATE_SELECT_FILE = 0x1;
+    static final int STATE_PASTE = 0x2;
 
     DrawerLayout drawerLayout;
     Toolbar toolbar;
@@ -28,9 +34,13 @@ public class MainActivity extends AppCompatActivity implements BaseFileListFragm
     BaseFileListFragment fragment;
 
     ActionMode actionMode;
+    int actionModeState;
 
     int prevSelectedFileCnt = 0;
     ArrayList<File> selectedFiles;
+    ArrayList<File> pasteBin = new ArrayList<>();
+    int pasteBinAction;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +64,6 @@ public class MainActivity extends AppCompatActivity implements BaseFileListFragm
 
         indicator.setRootDir(Environment.getExternalStorageDirectory());
         indicator.setOnPathChangeListener(MainActivity.this);
-
     }
 
     @Override
@@ -66,17 +75,10 @@ public class MainActivity extends AppCompatActivity implements BaseFileListFragm
     @Override
     public void onSelectedFilesChange(ArrayList<File> files) {
         this.selectedFiles = files;
-        /*
-        Exception e = new Exception();
-        e.printStackTrace(System.out);
-        System.out.println("onSelectedFilesChange");
-        */
-        for(File i : files){
-            System.out.println(i.getAbsolutePath());
-        }
-        if(files.size() > 0 && prevSelectedFileCnt == 0) {
+        if(files.size() > 0) {
+            actionModeState = STATE_SELECT_FILE;
             actionMode = toolbar.startActionMode(actionModeCallback);
-        } else if(files.size() == 0) {
+        } else if(files.size() == 0 && pasteBin.size() == 0) {
             actionMode.finish();
         }
         prevSelectedFileCnt = files.size();
@@ -90,13 +92,27 @@ public class MainActivity extends AppCompatActivity implements BaseFileListFragm
     ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            menu.clear();
-            menu.add("copy").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
-            menu.add("cut").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
-            menu.add("delete").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-            if(selectedFiles.size() == 1){
-                menu.add("rename").setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+            switch(actionModeState) {
+                case STATE_NONE:
+
+                    break;
+
+                case STATE_SELECT_FILE:
+                    menu.clear();
+                    menu.add("copy").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                    menu.add("cut").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                    menu.add("delete").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                    if (selectedFiles != null && selectedFiles.size() == 1) {
+                        menu.add("rename").setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+                    }
+                    break;
+
+                case STATE_PASTE:
+                    menu.clear();
+                    menu.add("paste").setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                    break;
             }
+
             return true;
         }
 
@@ -108,12 +124,29 @@ public class MainActivity extends AppCompatActivity implements BaseFileListFragm
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             if(item.getTitle().equals("copy")){
+                Toast.makeText(MainActivity.this, "copy", Toast.LENGTH_SHORT).show();
+                pasteBin.clear();
+                pasteBin.addAll(selectedFiles);
+                pasteBinAction = ACTION_COPY;
+
+                switchActionModeState(STATE_PASTE);
 
             } else if (item.getTitle().equals("cut")){
+                pasteBin.clear();
+                pasteBin.addAll(selectedFiles);
+                pasteBinAction = ACTION_CUT;
+
+                switchActionModeState(STATE_PASTE);
 
             } else if (item.getTitle().equals("delete")){
 
             } else if (item.getTitle().equals("rename")){
+
+            } else if (item.getTitle().equals("paste")) {
+                executePaste();
+                fragment.refreshCurrentDir();
+                pasteBin.clear();
+                switchActionModeState(STATE_NONE);
 
             }
             return true;
@@ -128,5 +161,28 @@ public class MainActivity extends AppCompatActivity implements BaseFileListFragm
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         return super.onCreateOptionsMenu(menu);
+    }
+
+    private void switchActionModeState(int state) {
+        actionModeState = state;
+        actionMode.finish();
+        if(state == STATE_NONE)
+            return;
+        actionMode = toolbar.startActionMode(actionModeCallback);
+    }
+
+    private void executePaste() {
+        //TODO: execute async
+        //TODO: task list
+        int cnt1 = 0, cnt2 = 0;
+        File currentPath = fragment.getCurrentDir();
+        for(File i : pasteBin){
+            if(FileUtil.copyFile(i, currentPath)){
+                cnt1++;
+            } else {
+                cnt2++;
+            }
+        }
+        System.out.println("success " + cnt1 + ", fail " + cnt2);
     }
 }
