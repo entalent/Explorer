@@ -19,21 +19,21 @@ JNIEXPORT jint JNICALL Java_cn_edu_bit_cs_explorer_util_FileUtil_copyFile
 
 
     int c;
-    FILE *fpSrc, *fpDest;  //定义两个指向文件的指针
-    fpSrc = fopen(srcFileName, "rb");    //以读取二进制的方式打开源文件
+    FILE *fpSrc, *fpDest;
+    fpSrc = fopen(srcFileName, "rb");
     if(fpSrc==NULL){
-        printf( "Source file open failure.");  //源文件不存在的时候提示错误
+        printf( "Source file open failure.");
         return 0;
     }
-    fpDest = fopen(dstFileName, "wb");  // //以写入二进制的方式打开目标文件
+    fpDest = fopen(dstFileName, "wb");
     if(fpDest==NULL){
         printf("Destination file open failure.");
         return 0;
     }
-    while((c=fgetc(fpSrc))!=EOF){   //从源文件中读取数据知道结尾
+    while((c=fgetc(fpSrc))!=EOF){
         fputc(c, fpDest);
     }
-    fclose(fpSrc);  //关闭文件指针，释放内存
+    fclose(fpSrc);
     fclose(fpDest);
 
     free(srcFileName);
