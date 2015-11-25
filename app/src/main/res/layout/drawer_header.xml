@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="192dp"
-    android:background="?attr/colorPrimaryDark"
-    android:orientation="vertical"
-    android:padding="16dp"
+    android:layout_height="wrap_content"
     android:fitsSystemWindows="true"
     android:theme="@style/AppTheme">
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="192dp"
+        android:background="?attr/colorPrimaryDark"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:fitsSystemWindows="true"
+        android:id="@+id/header">
 
     <TextView
         android:id="@+id/id_link"
@@ -22,6 +29,16 @@
         android:layout_marginBottom="16dp"
         android:src="@mipmap/ic_launcher"
         android:layout_above="@id/id_link" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/storageList"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/header"></LinearLayout>
 
 
 </RelativeLayout>

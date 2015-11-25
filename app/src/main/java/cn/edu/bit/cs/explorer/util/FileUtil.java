@@ -24,6 +24,10 @@ public class FileUtil {
         String dstFileName = dstPath + File.separator + srcFileName;
         File dstFile = new File(dstFileName);
 
+        if(srcFile.getParentFile().equals(dstPath)){
+            throw new IllegalArgumentException("source directory equals with destination directory");
+        }
+
         if(srcFile.isDirectory()) {
             if(!dstFile.mkdirs()){
                 //The directory exists, and not override
@@ -40,9 +44,7 @@ public class FileUtil {
             return successCnt;
         } else {
             //cut a single file
-            if(srcFile.getParentFile().equals(dstPath)){
-                throw new IllegalArgumentException("source directory equals with destination directory");
-            }
+
             if(dstFile.exists()) {
                 if(handler != null && handler.onDestiationFileExist(srcFile, dstFile)) {
                     //force overricde
@@ -67,6 +69,10 @@ public class FileUtil {
         String dstFileName = dstPath + File.separator + srcFileName;
         File dstFile = new File(dstFileName);
 
+        if(srcFile.getParentFile().equals(dstPath)){
+            throw new IllegalArgumentException("source directory equals with destination directory");
+        }
+
         if(srcFile.isDirectory()) {
             //copy a directory recursively
             if(!dstFile.mkdirs()){
@@ -83,9 +89,7 @@ public class FileUtil {
             return successCnt;
         } else {
             //copy a single file
-            if(srcFile.getParentFile().equals(dstPath)){
-                throw new IllegalArgumentException("source directory equals with destination directory");
-            }
+
             if(dstFile.exists()) {
                 if(handler != null && handler.onDestiationFileExist(srcFile, dstFile)) {
                     //force overricde
@@ -99,6 +103,26 @@ public class FileUtil {
                 return 0;
             } else {
                 return 1;
+            }
+        }
+    }
+
+    public static int deleteFile (File file) {
+        if(file.isDirectory()){
+            int cnt = 0;
+            File[] files = file.listFiles();
+            for(File i : files){
+                cnt += deleteFile(i);
+            }
+            if(file.delete()) {
+                cnt++;
+            }
+            return cnt;
+        } else {
+            if(file.delete()) {
+                return 1;
+            } else {
+                return 0;
             }
         }
     }

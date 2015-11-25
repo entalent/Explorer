@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:orientation="vertical" android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:padding="16dp">
 
@@ -8,30 +8,34 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="source file"
-        android:id="@+id/textView" />
+        android:text="original file name:"
+        android:id="@+id/textView5"
+        android:editable="false"/>
 
-    <cn.edu.bit.cs.explorer.ui.customview.FileListItem
-        android:layout_width="wrap_content"
+    <EditText
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/file1"
-        android:layout_gravity="center_horizontal" />
+        android:id="@+id/editText1"
+        android:layout_gravity="center_horizontal"
+        android:ems="16"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="file that already exists"
-        android:id="@+id/textView4" />
+        android:text="new file name:"
+        android:id="@+id/textView6"
+        android:ems="16"/>
 
-    <cn.edu.bit.cs.explorer.ui.customview.FileListItem
-        android:layout_width="wrap_content"
+    <EditText
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/file2"
-        android:layout_gravity="center_horizontal" />
+        android:id="@+id/editText2">
+        <requestFocus/>
+    </EditText>
 
     <LinearLayout
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
@@ -41,23 +45,13 @@
         <com.gc.materialdesign.views.ButtonFlat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/okBtn"
-            android:background="#1E88E5"
-            android:text="override"/>
+            android:id="@+id/btnRename"
+            android:text="rename"/>
 
         <com.gc.materialdesign.views.ButtonFlat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/cancelBtn"
-            android:background="#1E88E5"
+            android:id="@+id/btnCancel"
             android:text="cancel"/>
-
-        <com.gc.materialdesign.views.ButtonFlat
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/forall"
-            android:background="#1E88E5"
-            android:text="override for all"/>
     </LinearLayout>
-
 </LinearLayout>

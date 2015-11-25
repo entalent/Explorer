@@ -2,21 +2,23 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:materialdesign="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/drawer_layout"
 
     >
 
-
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
     <LinearLayout
         android:id="@+id/id_main_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:theme="@style/AppTheme.AppBarOverlay">
-
-
 
 
         <android.support.v7.widget.Toolbar
@@ -34,19 +36,112 @@
             android:layout_height="40dp"
             android:id="@+id/path_indicator"
             android:layout_gravity="center_horizontal"
+            android:elevation="10dp"
             />
 
-        <fragment
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:name="cn.edu.bit.cs.explorer.ui.fragment.BaseFileListFragment"
-            android:id="@+id/fragment"
-            android:layout_gravity="center_horizontal"
-            tools:layout="@layout/fragment_file_list" />
+            android:layout_height="match_parent">
+
+            <fragment
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:name="cn.edu.bit.cs.explorer.ui.fragment.BaseFileListFragment"
+                android:id="@+id/fragment"
+                android:layout_gravity="center_horizontal"
+                tools:layout="@layout/fragment_file_list" />
+
+            <com.gc.materialdesign.views.ProgressBarIndeterminate
+                android:background="@color/colorPrimaryDark"
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:id="@+id/view4"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true" />
+        </RelativeLayout>
+
+
 
 
     </LinearLayout>
 
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="10">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#a00a0a0a"
+                android:visibility="gone"
+                android:id="@+id/cover"></FrameLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true">
+
+                    <com.gc.materialdesign.views.ButtonFloat
+                    android:id="@+id/buttonAdd"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/colorPrimary"
+                    materialdesign:animate="false"
+
+                    materialdesign:iconDrawable="@drawable/ic_add_white_18dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_margin="30dp"
+                        android:layout_alignParentBottom="true"
+                        android:layout_centerHorizontal="true" />
+
+                    <com.gc.materialdesign.views.ButtonFloatSmall
+                        android:background="@color/colorPrimary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/btnNewFolder"
+                        android:layout_above="@+id/buttonAdd"
+                        materialdesign:iconDrawable="@drawable/ic_create_new_folder_white_18dp"
+                        android:layout_alignLeft="@+id/btnNewFile"
+                        android:layout_alignStart="@+id/btnNewFile"
+                        android:visibility="invisible"/>
+
+                    <com.gc.materialdesign.views.ButtonFloatSmall
+                        android:background="@color/colorPrimary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/btnNewFile"
+                        android:layout_marginBottom="22dp"
+                        materialdesign:iconDrawable="@drawable/ic_note_add_white_18dp"
+                        android:layout_above="@+id/btnNewFolder"
+                        android:layout_centerHorizontal="true"
+                        android:visibility="invisible"
+                        />
+
+                    <com.gc.materialdesign.views.ButtonFloatSmall
+                        android:background="@color/colorPrimary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/btnSearch"
+                        android:layout_marginBottom="22dp"
+                        android:layout_above="@+id/btnNewFile"
+                        materialdesign:iconDrawable="@drawable/ic_search_white_18dp"
+                        android:layout_alignLeft="@+id/btnNewFile"
+                        android:layout_alignStart="@+id/btnNewFile"
+                        android:visibility="invisible"/>
+
+
+                </RelativeLayout>
+            </RelativeLayout>
+        </FrameLayout>
+
+    </FrameLayout>
 
     <android.support.design.widget.NavigationView
         android:id="@+id/id_nv_menu"

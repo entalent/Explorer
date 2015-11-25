@@ -123,7 +123,9 @@ public class BaseFileListFragment extends Fragment
     private void refreshView() {
         selectedFiles.clear();
         invokeOnSelectedFilesChange();
+        adapterView.setSelection(0);
         ((BaseAdapter)adapterView.getAdapter()).notifyDataSetChanged();
+        adapterView.setSelection(0);
     }
 
     public void refreshCurrentDir() {
@@ -132,6 +134,8 @@ public class BaseFileListFragment extends Fragment
 
     public void setRootDir(File rootDir){
         this.rootDir = rootDir;
+        this.selectedFiles.clear();
+        invokeOnSelectedFilesChange();
         setCurrentDir(rootDir);
     }
 

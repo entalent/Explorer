@@ -16,8 +16,6 @@ import java.io.File;
  * Created by entalent on 2015/11/25.
  */
 public abstract class BlockingDialog extends Dialog {
-    public static final int DIALOG_OK = 0x0;
-    public static final int DIALOG_CANCEL = 0x1;
 
     int dialogResult;
     Handler mHandler;
@@ -61,6 +59,7 @@ public abstract class BlockingDialog extends Dialog {
             }
         };
         super.show();
+        setCancelable(false);
         try {
             Looper.getMainLooper().loop();
         }
