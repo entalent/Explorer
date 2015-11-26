@@ -10,6 +10,9 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.ListView;
+import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -56,6 +59,7 @@ public class BaseFileListFragment extends Fragment
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
+
             FileListItem item = (FileListItem)convertView;
             if(item == null){
                 item = new FileListItem(getContext(), null);
@@ -117,13 +121,15 @@ public class BaseFileListFragment extends Fragment
         rootView = inflater.inflate(R.layout.fragment_file_list, container, false);
         adapterView = (ListView)rootView.findViewById(R.id.listView);
         adapterView.setAdapter(new FileListAdapter());
+        TextView emptyView = new TextView(getContext());
+        emptyView.setText("no file or folder in this volume");
+        adapterView.setEmptyView(emptyView);
         return rootView;
     }
 
     private void refreshView() {
         selectedFiles.clear();
         invokeOnSelectedFilesChange();
-        adapterView.setSelection(0);
         ((BaseAdapter)adapterView.getAdapter()).notifyDataSetChanged();
         adapterView.setSelection(0);
     }
@@ -134,8 +140,6 @@ public class BaseFileListFragment extends Fragment
 
     public void setRootDir(File rootDir){
         this.rootDir = rootDir;
-        this.selectedFiles.clear();
-        invokeOnSelectedFilesChange();
         setCurrentDir(rootDir);
     }
 
@@ -205,6 +209,19 @@ public class BaseFileListFragment extends Fragment
 
             }
         }
+    }
+
+    public void selectAll() {
+        selectedFiles.clear();
+        selectedFiles.addAll(filesInCurrentDir);
+        refreshCurrentDir();
+        invokeOnSelectedFilesChange();
+    }
+
+    public void deselectAll() {
+        selectedFiles.clear();
+        refreshCurrentDir();
+        invokeOnSelectedFilesChange();
     }
 
     public interface FileListListener {

@@ -18,17 +18,21 @@ import android.view.animation.TranslateAnimation;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gc.materialdesign.views.Button;
 import com.gc.materialdesign.views.ButtonFlat;
 import com.gc.materialdesign.views.ButtonFloat;
 import com.gc.materialdesign.views.ButtonFloatSmall;
-import com.gc.materialdesign.widgets.Dialog;
+
+import org.w3c.dom.Text;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
-import cn.edu.bit.cs.explorer.ui.BlockingDialog;
+import cn.edu.bit.cs.explorer.ui.dialog.BlockingDialog;
 import cn.edu.bit.cs.explorer.ui.customview.FileListItem;
 import cn.edu.bit.cs.explorer.ui.customview.PathIndicator;
 import cn.edu.bit.cs.explorer.ui.customview.StorageVolumeLabel;
@@ -109,7 +113,6 @@ public class MainActivity extends AppCompatActivity
                     showSmallButtons();
                 else
                     hideSmallButton();
-                smallButtonShowing = !smallButtonShowing;
             }
         });
 
@@ -118,6 +121,20 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 hideSmallButton();
                 smallButtonShowing = false;
+            }
+        });
+
+        newFileBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                executeNewFile();
+            }
+        });
+
+        newFolderBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                executeNewFolder();
             }
         });
     }
@@ -131,9 +148,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onSelectedFilesChange(ArrayList<File> files) {
         this.selectedFiles = files;
-        if(files.size() > 0) {
+        if(prevSelectedFileCnt == 0 &&
+                files.size() > 0) {
             actionModeState = STATE_SELECT_FILE;
             actionMode = toolbar.startActionMode(actionModeCallback);
+        } else if(prevSelectedFileCnt > 0 && files.size() > 0) {
+            actionMode.invalidate();
         } else if(files.size() == 0 && pasteBin.size() == 0) {
             actionMode.finish();
         }
@@ -195,31 +215,28 @@ public class MainActivity extends AppCompatActivity
                 switchActionModeState(STATE_PASTE);
 
             } else if (item.getTitle().equals("delete")){
-                final Dialog dialog = new Dialog(MainActivity.this, "confirm delete", "are you going to delete selected files?");
-                dialog.addCancelButton("cancel");
+                final DeleteDialog dialog = new DeleteDialog(MainActivity.this);
                 dialog.show();
-
-                dialog.setOnAcceptButtonClickListener(new View.OnClickListener() {
+                dialog.getDeleteInfoText().setText("delete selected " + selectedFiles.size() + " files ?");
+                dialog.getButtonCancel().setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        selectedFiles.clear();
+                        clearSelectedAndRefrfesh();
+                        dialog.dismiss();
+                    }
+                });
+                dialog.getButtonDelete().setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         executeDelete();
-                        fragment.refreshCurrentDir();
-                        selectedFiles.clear();
-                        switchActionModeState(STATE_NONE);
+                        clearSelectedAndRefrfesh();
                         dialog.dismiss();
                     }
                 });
-                dialog.setOnCancelButtonClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        selectedFiles.clear();
-                        switchActionModeState(STATE_NONE);
-                        dialog.dismiss();
-                    }
-                });
-                dialog.getButtonAccept().setText("delete");
 
             } else if (item.getTitle().equals("rename")){
+                //TODO: multiple file names?
                 final RenameDialog dialog = new RenameDialog(MainActivity.this);
                 dialog.show();
                 final File originalFile = selectedFiles.get(0);
@@ -235,24 +252,21 @@ public class MainActivity extends AppCompatActivity
                             Toast.makeText(MainActivity.this, "rename fail", Toast.LENGTH_SHORT).show();
                         }
 
-                        selectedFiles.clear();
-                        fragment.refreshCurrentDir();
-                        switchActionModeState(STATE_NONE);
+                        clearSelectedAndRefrfesh();
                         dialog.dismiss();
                     }
                 });
                 dialog.getButtonCancel().setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        switchActionModeState(STATE_NONE);
+                        clearSelectedAndRefrfesh();
                         dialog.dismiss();
                     }
                 });
             } else if (item.getTitle().equals("paste")) {
                 executePaste();
-                fragment.refreshCurrentDir();
+                clearSelectedAndRefrfesh();
                 pasteBin.clear();
-                switchActionModeState(STATE_NONE);
 
             }
             return true;
@@ -260,9 +274,15 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
-
+            fragment.deselectAll();
         }
     };
+
+    public void clearSelectedAndRefrfesh() {
+        fragment.deselectAll();
+        fragment.refreshCurrentDir();
+        switchActionModeState(STATE_NONE);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -335,6 +355,67 @@ public class MainActivity extends AppCompatActivity
         return cnt;
     }
 
+    private void executeNewFolder() {
+        final NewFileOrFolderDialog dialog = new NewFileOrFolderDialog(MainActivity.this);
+        dialog.show();
+        dialog.setTitle("new folder");
+        dialog.getCancelBtn().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                hideSmallButton();
+            }
+        });
+
+        dialog.getCreateBtn().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                File newFile = new File(fragment.getCurrentDir() + File.separator + dialog.getNewFileNameText().getText().toString());
+                if(!newFile.exists() && newFile.mkdir()) {
+                    fragment.refreshCurrentDir();
+                } else {
+
+                }
+                dialog.dismiss();
+                hideSmallButton();
+            }
+
+        });
+    }
+
+    private void executeNewFile() {
+        final NewFileOrFolderDialog dialog = new NewFileOrFolderDialog(MainActivity.this);
+        dialog.show();
+        dialog.setTitle("new file");
+        dialog.getCancelBtn().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                hideSmallButton();
+            }
+        });
+
+        dialog.getCreateBtn().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                File newFile = new File(fragment.getCurrentDir() + File.separator + dialog.getNewFileNameText().getText().toString());
+                if(!newFile.exists()) {
+                    try {
+                        newFile.createNewFile();
+                        fragment.refreshCurrentDir();
+                    } catch (IOException e) {
+
+                    }
+
+                } else {
+
+                }
+                dialog.dismiss();
+                hideSmallButton();
+            }
+        });
+    }
+
     private void showSmallButtons() {
         Animation showAnim = new TranslateAnimation(Animation.ABSOLUTE, 0, Animation.ABSOLUTE, 0,
                 Animation.ABSOLUTE, 1000, Animation.ABSOLUTE, 0);
@@ -353,6 +434,7 @@ public class MainActivity extends AppCompatActivity
         rotateAnim.setFillAfter(true);
         addbutton.startAnimation(rotateAnim);
         cover.setVisibility(View.VISIBLE);
+        smallButtonShowing = true;
     }
 
     private void hideSmallButton() {
@@ -373,6 +455,7 @@ public class MainActivity extends AppCompatActivity
         rotateAnim.setFillAfter(true);
         addbutton.startAnimation(rotateAnim);
         cover.setVisibility(View.GONE);
+        smallButtonShowing = false;
     }
 
     class FileExistsConfirmDialog extends BlockingDialog {
@@ -426,6 +509,34 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    class DeleteDialog extends android.app.Dialog {
+        TextView deleteInfoText;
+        ButtonFlat deleteBtn, cancelBtn;
+
+        public DeleteDialog(Context context) {
+            super(context);
+            setTheme(R.style.AppTheme);
+            setTitle("delete");
+            setContentView(R.layout.dialog_delete);
+
+            deleteInfoText = (TextView)findViewById(R.id.deleteInfoText);
+            deleteBtn = (ButtonFlat)findViewById(R.id.btnDelete);
+            cancelBtn = (ButtonFlat)findViewById(R.id.btnCancel);
+        }
+
+        public TextView getDeleteInfoText() {
+            return deleteInfoText;
+        }
+
+        public View getButtonDelete() {
+            return deleteBtn;
+        }
+
+        public View getButtonCancel() {
+            return cancelBtn;
+        }
+    }
+
     class RenameDialog extends android.app.Dialog {
         EditText originalNameText, newNameText;
         ButtonFlat renameBtn, cancelBtn;
@@ -455,6 +566,33 @@ public class MainActivity extends AppCompatActivity
 
         public EditText getNewNameText () {
             return newNameText;
+        }
+    }
+
+    class NewFileOrFolderDialog extends android.app.Dialog {
+        EditText newFileNameText;
+        ButtonFlat cancelBtn, createBtn;
+
+        public NewFileOrFolderDialog(Context context) {
+            super(context);
+            setTheme(R.style.AppTheme);
+            setContentView(R.layout.dialog_newfileorfolder);
+
+            newFileNameText = (EditText)findViewById(R.id.editText);
+            cancelBtn = (ButtonFlat)findViewById(R.id.btnCancel);
+            createBtn = (ButtonFlat)findViewById(R.id.btnCreate);
+        }
+
+        public ButtonFlat getCancelBtn() {
+            return cancelBtn;
+        }
+
+        public ButtonFlat getCreateBtn() {
+            return createBtn;
+        }
+
+        public EditText getNewFileNameText() {
+            return newFileNameText;
         }
     }
 

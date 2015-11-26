@@ -1,4 +1,4 @@
-package cn.edu.bit.cs.explorer.ui;
+package cn.edu.bit.cs.explorer.ui.dialog;
 
 import android.app.Activity;
 import android.app.Dialog;
