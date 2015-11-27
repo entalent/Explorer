@@ -1,8 +1,14 @@
 package cn.edu.bit.cs.explorer;
 
+import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.IBinder;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -12,16 +18,18 @@ import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.gc.materialdesign.views.Button;
 import com.gc.materialdesign.views.ButtonFlat;
 import com.gc.materialdesign.views.ButtonFloat;
 import com.gc.materialdesign.views.ButtonFloatSmall;
@@ -105,8 +113,6 @@ public class MainActivity extends AppCompatActivity
         refreshStorageVolumes();
 
         addbutton.setOnClickListener(new View.OnClickListener() {
-
-
             @Override
             public void onClick(View v) {
                 if (!smallButtonShowing)
@@ -115,6 +121,7 @@ public class MainActivity extends AppCompatActivity
                     hideSmallButton();
             }
         });
+
 
         cover.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,10 +138,19 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        newFolderBtn.setOnClickListener(new View.OnClickListener(){
+        newFolderBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 executeNewFolder();
+            }
+        });
+
+        searchBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, SearchActivity.class);
+                i.putExtra("path", fragment.getCurrentDir());
+                startActivity(i);
             }
         });
     }
@@ -278,15 +294,15 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return super.onCreateOptionsMenu(menu);
+    }
+
     public void clearSelectedAndRefrfesh() {
         fragment.deselectAll();
         fragment.refreshCurrentDir();
         switchActionModeState(STATE_NONE);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        return super.onCreateOptionsMenu(menu);
     }
 
     private void refreshStorageVolumes() {
@@ -318,6 +334,7 @@ public class MainActivity extends AppCompatActivity
 
     private int executePaste() {
         //TODO: execute async task list
+
 
         if(pasteBinAction == ACTION_COPY) {
             int cnt1 = 0;
