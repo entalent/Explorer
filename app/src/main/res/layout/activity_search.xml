@@ -4,63 +4,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent" android:fitsSystemWindows="true"
-    tools:context=".MainActivity"
-    android:theme="@style/MyActionBarTheme">
+    android:background="@color/colorPrimary"
+    tools:context=".MainActivity">
 
     <android.support.design.widget.AppBarLayout android:layout_height="wrap_content"
-        android:layout_width="match_parent" android:theme="@style/AppTheme.AppBarOverlay"
-        android:id="@+id/linearLayout2">
+        android:layout_width="match_parent" android:theme="@style/AppTheme.AppBarOverlay">
 
         <android.support.v7.widget.Toolbar android:id="@+id/toolbar"
-            android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary" app:popupTheme="@style/AppTheme.PopupOverlay"
-            app:navigationIcon="?attr/homeAsUpIndicator"/>
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/linearLayout2"
-        android:layout_alignLeft="@+id/linearLayout2"
-        android:layout_alignStart="@+id/linearLayout2"
-        android:layout_marginTop="70dp"
-        android:layout_alignParentBottom="true"
-        android:padding="10dp">
-
-
-        <EditText
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/editText"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_toLeftOf="@+id/searchView"
-            android:layout_toStartOf="@+id/searchView" />
-
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/searchView"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:src="@drawable/ic_search_white_18dp" />
-
-        <ListView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/listView"
-            android:layout_below="@+id/editText"
-            android:layout_centerHorizontal="true" />
-
-        <com.gc.materialdesign.views.ProgressBarIndeterminate
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            android:id="@+id/progressBar"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true" />
-    </RelativeLayout>
+    <include layout="@layout/activity_search_content" />
 
 </android.support.design.widget.CoordinatorLayout>

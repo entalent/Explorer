@@ -44,6 +44,8 @@ public class SearchActivity extends AppCompatActivity {
 
     ArrayList<File> searchResult = new ArrayList<>();
 
+    SearchTask searchTask;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,8 +73,9 @@ public class SearchActivity extends AppCompatActivity {
                 if (keyWord.isEmpty()) {
                     editText.setError("keyword should not be empty");
                 }
-                SearchTask searchTask = new SearchTask();
+                searchTask = new SearchTask();
                 searchTask.executeOnExecutor(SINGLE_TASK_EXECUTOR);
+                //TODO: cancel task in onDestroy() ?
             }
         });
 
@@ -134,17 +137,24 @@ public class SearchActivity extends AppCompatActivity {
         @Override
         protected void onProgressUpdate(ArrayList<File>... values) {
             super.onProgressUpdate(values);
+            //modifying searchResult directly may cause exception
+            searchResult.clear();
+            searchResult.addAll(values[0]);
             ((BaseAdapter)listView.getAdapter()).notifyDataSetChanged();
         }
 
         @Override
         protected Integer doInBackground(File... params) {
             Queue<File> searchQueue = new LinkedList<File>();
-            searchResult.clear();
+            ArrayList<File> searchResult = new ArrayList<>();
             searchQueue.add(currentDir);
             while(!searchQueue.isEmpty()) {
                 File dir = searchQueue.poll();
                 File[] files = dir.listFiles();
+                if(files == null){
+                    System.out.println("null");
+                    continue;
+                }
                 for(File i : files) {
                     if(judgeFile(i)) {
                         searchResult.add(i);
