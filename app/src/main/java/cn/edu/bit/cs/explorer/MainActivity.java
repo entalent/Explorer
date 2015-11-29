@@ -1,6 +1,7 @@
 package cn.edu.bit.cs.explorer;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
+import android.os.Looper;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -40,11 +42,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import cn.edu.bit.cs.explorer.service.MainService;
 import cn.edu.bit.cs.explorer.ui.dialog.BlockingDialog;
 import cn.edu.bit.cs.explorer.ui.customview.FileListItem;
 import cn.edu.bit.cs.explorer.ui.customview.PathIndicator;
 import cn.edu.bit.cs.explorer.ui.customview.StorageVolumeLabel;
 import cn.edu.bit.cs.explorer.ui.fragment.BaseFileListFragment;
+import cn.edu.bit.cs.explorer.util.FileAsyncTask;
 import cn.edu.bit.cs.explorer.util.FileUtil;
 import cn.edu.bit.cs.explorer.util.StorageUtil;
 
@@ -79,6 +83,21 @@ public class MainActivity extends AppCompatActivity
     int pasteBinAction;
 
     boolean smallButtonShowing = false;
+
+    MainService mainService;
+
+    ServiceConnection conn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            Toast.makeText(MainActivity.this, "service connected", Toast.LENGTH_SHORT).show();
+            mainService = ((MainService.MainServiceBinder)service).getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mainService = null;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,6 +172,15 @@ public class MainActivity extends AppCompatActivity
                 startActivity(i);
             }
         });
+
+        startService(new Intent(MainActivity.this, MainService.class));
+        bindService(new Intent(MainActivity.this, MainService.class), conn, BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(conn);
     }
 
     @Override
@@ -197,6 +225,7 @@ public class MainActivity extends AppCompatActivity
                     if (selectedFiles != null && selectedFiles.size() == 1) {
                         menu.add("rename").setIcon(R.drawable.ic_create_white_18dp).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
                     }
+                    menu.add("select all").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
                     break;
 
                 case STATE_PASTE:
@@ -284,6 +313,8 @@ public class MainActivity extends AppCompatActivity
                 clearSelectedAndRefrfesh();
                 pasteBin.clear();
 
+            } else if(item.getTitle().equals("select all")) {
+                fragment.selectAll();
             }
             return true;
         }
@@ -332,44 +363,90 @@ public class MainActivity extends AppCompatActivity
         actionMode = toolbar.startActionMode(actionModeCallback);
     }
 
-    private int executePaste() {
-        //TODO: execute async task list
+    private void executePaste() {
+        FileAsyncTask task = new FileAsyncTask(){
+            ArrayList<File> filesToOperate = new ArrayList<>();
+            int operation;
+            int completedFileCnt = 0;
 
-
-        if(pasteBinAction == ACTION_COPY) {
-            int cnt1 = 0;
-            File currentPath = fragment.getCurrentDir();
-            for (File i : pasteBin) {
-                try {
-                    cnt1 += FileUtil.copyFile(i, currentPath, new FileHandler());
-                } catch (IllegalArgumentException e) {
-                    Toast.makeText(MainActivity.this, "source directory identical with target directory", Toast.LENGTH_SHORT).show();
-                    return cnt1;
+            @Override
+            protected void onPostExecute(Integer aInteger) {
+                super.onPostExecute(aInteger);
+                if(fragment.getCurrentDir().equals(currentDirectory)) {
+                    fragment.refreshCurrentDir();
                 }
             }
-            return cnt1;
-        } else if(pasteBinAction == ACTION_CUT) {
-            int cnt1 = 0;
-            File currentPath = fragment.getCurrentDir();
-            for (File i : pasteBin) {
-                try {
-                    cnt1 += FileUtil.cutFile(i, currentPath, new FileHandler());
-                } catch (IllegalArgumentException e) {
-                    Toast.makeText(MainActivity.this, "source directory identical with target directory", Toast.LENGTH_SHORT).show();
-                    return cnt1;
-                }
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                currentDirectory = fragment.getCurrentDir();
+                taskName = "paste to " + currentDirectory.getPath();
+                filesToOperate.addAll(pasteBin);
+                operation = pasteBinAction;
+                currentDirectory = fragment.getCurrentDir();
             }
-            return cnt1;
+
+            @Override
+            protected Integer doInBackground(String... params) {
+                Looper.prepare();
+                completedFileCnt = 0;
+                File currentPath = fragment.getCurrentDir();
+                for (File i : filesToOperate) {
+                    try {
+                        if(operation == ACTION_COPY)
+                            completedFileCnt += FileUtil.copyFile(i, currentPath, new FileHandler());
+                        else if(operation == ACTION_CUT)
+                            completedFileCnt += FileUtil.cutFile(i, currentPath, new FileHandler());
+                    } catch (IllegalArgumentException e) {
+                        Toast.makeText(MainActivity.this, "source directory identical with target directory", Toast.LENGTH_SHORT).show();
+                        return completedFileCnt;
+                    }
+                }
+                return completedFileCnt;
+            }
+        };
+
+        if(mainService != null){
+            mainService.addTask(task);
         }
-        return 0;
+
     }
 
-    private int executeDelete() {
-        int cnt = 0;
-        for(File i : selectedFiles) {
-            cnt += FileUtil.deleteFile(i);
+    private void executeDelete() {
+        FileAsyncTask task = new FileAsyncTask() {
+            ArrayList<File> filesToDelete = new ArrayList<>();
+            int completedFileCnt = 0;
+            @Override
+            protected void onPostExecute(Integer aInteger) {
+                super.onPostExecute(aInteger);
+                if(fragment.getCurrentDir().equals(currentDirectory)) {
+                    fragment.refreshCurrentDir();
+                }
+            }
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                currentDirectory = fragment.getCurrentDir();
+                taskName = "paste to " + currentDirectory.getPath();
+                filesToDelete.addAll(selectedFiles);
+                currentDirectory = fragment.getCurrentDir();
+            }
+
+            @Override
+            protected Integer doInBackground(String... params) {
+                Looper.prepare();
+                completedFileCnt = 0;
+                for (File i : filesToDelete) {
+                    completedFileCnt += FileUtil.deleteFile(i);
+                }
+                return completedFileCnt;
+            }
+        };
+        if(mainService != null) {
+            mainService.addTask(task);
         }
-        return cnt;
     }
 
     private void executeNewFolder() {
