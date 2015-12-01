@@ -44,7 +44,7 @@ public class MainService extends Service {
             synchronized (tasks) {
                 taskToExecute = tasks.poll();
             }
-            taskToExecute.executeOnExecutor(SINGLE_TASK_EXECUTOR);
+            taskToExecute.execute("");
         }
         Toast.makeText(MainService.this, "execute finish", Toast.LENGTH_SHORT).show();
         isExecuting = false;

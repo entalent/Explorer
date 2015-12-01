@@ -1,12 +1,10 @@
 package cn.edu.bit.cs.explorer;
 
-import android.app.Service;
-import android.content.BroadcastReceiver;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
@@ -20,15 +18,12 @@ import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
-import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,17 +31,15 @@ import com.gc.materialdesign.views.ButtonFlat;
 import com.gc.materialdesign.views.ButtonFloat;
 import com.gc.materialdesign.views.ButtonFloatSmall;
 
-import org.w3c.dom.Text;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import cn.edu.bit.cs.explorer.service.MainService;
-import cn.edu.bit.cs.explorer.ui.dialog.BlockingDialog;
 import cn.edu.bit.cs.explorer.ui.customview.FileListItem;
 import cn.edu.bit.cs.explorer.ui.customview.PathIndicator;
 import cn.edu.bit.cs.explorer.ui.customview.StorageVolumeLabel;
+import cn.edu.bit.cs.explorer.ui.dialog.BlockingDialog;
 import cn.edu.bit.cs.explorer.ui.fragment.BaseFileListFragment;
 import cn.edu.bit.cs.explorer.util.FileAsyncTask;
 import cn.edu.bit.cs.explorer.util.FileUtil;
@@ -164,7 +157,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        searchBtn.setOnClickListener(new View.OnClickListener(){
+        searchBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(MainActivity.this, SearchActivity.class);
@@ -363,6 +356,7 @@ public class MainActivity extends AppCompatActivity
         actionMode = toolbar.startActionMode(actionModeCallback);
     }
 
+    //TODO: 弃AsyncTask
     private void executePaste() {
         FileAsyncTask task = new FileAsyncTask(){
             ArrayList<File> filesToOperate = new ArrayList<>();
@@ -468,7 +462,7 @@ public class MainActivity extends AppCompatActivity
                 if(!newFile.exists() && newFile.mkdir()) {
                     fragment.refreshCurrentDir();
                 } else {
-
+                    Toast.makeText(MainActivity.this, "failed to create new folder", Toast.LENGTH_SHORT).show();
                 }
                 dialog.dismiss();
                 hideSmallButton();
@@ -498,7 +492,7 @@ public class MainActivity extends AppCompatActivity
                         newFile.createNewFile();
                         fragment.refreshCurrentDir();
                     } catch (IOException e) {
-
+                        Toast.makeText(MainActivity.this, "failed to create new file", Toast.LENGTH_SHORT).show();
                     }
 
                 } else {
