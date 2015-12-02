@@ -111,8 +111,10 @@ public class FileUtil {
         if(file.isDirectory()){
             int cnt = 0;
             File[] files = file.listFiles();
-            for(File i : files){
-                cnt += deleteFile(i);
+            if(files != null) {
+                for(File i : files){
+                    cnt += deleteFile(i);
+                }
             }
             if(file.delete()) {
                 cnt++;

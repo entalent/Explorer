@@ -54,7 +54,8 @@
                 android:background="@color/colorPrimaryDark"
                 android:layout_width="match_parent"
                 android:layout_height="10dp"
-                android:id="@+id/view4"
+                android:id="@+id/progressBar"
+                android:visibility="gone"
                 android:layout_alignParentBottom="true"
                 android:layout_centerHorizontal="true" />
         </RelativeLayout>

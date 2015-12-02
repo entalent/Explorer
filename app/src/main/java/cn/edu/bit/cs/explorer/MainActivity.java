@@ -1,14 +1,14 @@
 package cn.edu.bit.cs.explorer;
 
-import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
-import android.os.Looper;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -24,12 +24,14 @@ import android.view.animation.TranslateAnimation;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gc.materialdesign.views.ButtonFlat;
 import com.gc.materialdesign.views.ButtonFloat;
 import com.gc.materialdesign.views.ButtonFloatSmall;
+import com.gc.materialdesign.views.ProgressBarIndeterminate;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,16 +42,21 @@ import cn.edu.bit.cs.explorer.ui.customview.FileListItem;
 import cn.edu.bit.cs.explorer.ui.customview.PathIndicator;
 import cn.edu.bit.cs.explorer.ui.customview.StorageVolumeLabel;
 import cn.edu.bit.cs.explorer.ui.dialog.BlockingDialog;
+import cn.edu.bit.cs.explorer.ui.dialog.DeleteDialog;
+import cn.edu.bit.cs.explorer.ui.dialog.NewFileOrFolderDialog;
+import cn.edu.bit.cs.explorer.ui.dialog.RenameDialog;
 import cn.edu.bit.cs.explorer.ui.fragment.BaseFileListFragment;
-import cn.edu.bit.cs.explorer.util.FileAsyncTask;
+import cn.edu.bit.cs.explorer.util.tasks.DeleteTask;
+import cn.edu.bit.cs.explorer.util.tasks.FileAsyncTask;
 import cn.edu.bit.cs.explorer.util.FileUtil;
 import cn.edu.bit.cs.explorer.util.StorageUtil;
+import cn.edu.bit.cs.explorer.util.tasks.PasteTask;
 
 public class MainActivity extends AppCompatActivity
         implements BaseFileListFragment.FileListListener, PathIndicator.OnPathChangeListener {
 
-    static final int ACTION_COPY = 0x0;
-    static final int ACTION_CUT = 0x1;
+    public static final int ACTION_COPY = 0x0;
+    public static final int ACTION_CUT = 0x1;
 
     static final int STATE_NONE = 0x0;
     static final int STATE_SELECT_FILE = 0x1;
@@ -62,6 +69,7 @@ public class MainActivity extends AppCompatActivity
     ButtonFloat addbutton;
     ButtonFloatSmall newFileBtn, newFolderBtn, searchBtn;
     FrameLayout cover;
+    ProgressBarIndeterminate progressBar;
 
     BaseFileListFragment fragment;
 
@@ -79,23 +87,18 @@ public class MainActivity extends AppCompatActivity
 
     MainService mainService;
 
-    ServiceConnection conn = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            Toast.makeText(MainActivity.this, "service connected", Toast.LENGTH_SHORT).show();
-            mainService = ((MainService.MainServiceBinder)service).getService();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mainService = null;
-        }
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
+        startService(new Intent(MainActivity.this, MainService.class));
+        bindService(new Intent(MainActivity.this, MainService.class), conn, BIND_AUTO_CREATE);
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(getString(R.string.action_main_service));
+        registerReceiver(receiver, intentFilter);
+
+
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.id_toolbar);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -107,6 +110,7 @@ public class MainActivity extends AppCompatActivity
         newFolderBtn = (ButtonFloatSmall)findViewById(R.id.btnNewFolder);
         searchBtn = (ButtonFloatSmall)findViewById(R.id.btnSearch);
         cover = (FrameLayout)findViewById(R.id.cover);
+        progressBar = (ProgressBarIndeterminate)findViewById(R.id.progressBar);
 
         setSupportActionBar(toolbar);
 
@@ -165,15 +169,13 @@ public class MainActivity extends AppCompatActivity
                 startActivity(i);
             }
         });
-
-        startService(new Intent(MainActivity.this, MainService.class));
-        bindService(new Intent(MainActivity.this, MainService.class), conn, BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unbindService(conn);
+        unregisterReceiver(receiver);
     }
 
     @Override
@@ -318,6 +320,36 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
+    ServiceConnection conn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            Toast.makeText(MainActivity.this, "service connected", Toast.LENGTH_SHORT).show();
+            mainService = ((MainService.MainServiceBinder)service).getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mainService = null;
+        }
+    };
+
+    BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int action = intent.getIntExtra("action", 0);
+            if(action == MainService.ACTION_SHOW_PROGRESS){
+                progressBar.setVisibility(View.VISIBLE);
+            } else if(action == MainService.ACTION_HIDE_PROGRESS) {
+                progressBar.setVisibility(View.GONE);
+            }if(action == MainService.ACTION_REFRESH_DIRECTORY){
+                File file = (File) intent.getSerializableExtra("file");
+                if(file.equals(fragment.getCurrentDir())){
+                    fragment.refreshCurrentDir();
+                }
+            }
+        }
+    };
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         return super.onCreateOptionsMenu(menu);
@@ -356,51 +388,8 @@ public class MainActivity extends AppCompatActivity
         actionMode = toolbar.startActionMode(actionModeCallback);
     }
 
-    //TODO: 弃AsyncTask
     private void executePaste() {
-        FileAsyncTask task = new FileAsyncTask(){
-            ArrayList<File> filesToOperate = new ArrayList<>();
-            int operation;
-            int completedFileCnt = 0;
-
-            @Override
-            protected void onPostExecute(Integer aInteger) {
-                super.onPostExecute(aInteger);
-                if(fragment.getCurrentDir().equals(currentDirectory)) {
-                    fragment.refreshCurrentDir();
-                }
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                currentDirectory = fragment.getCurrentDir();
-                taskName = "paste to " + currentDirectory.getPath();
-                filesToOperate.addAll(pasteBin);
-                operation = pasteBinAction;
-                currentDirectory = fragment.getCurrentDir();
-            }
-
-            @Override
-            protected Integer doInBackground(String... params) {
-                Looper.prepare();
-                completedFileCnt = 0;
-                File currentPath = fragment.getCurrentDir();
-                for (File i : filesToOperate) {
-                    try {
-                        if(operation == ACTION_COPY)
-                            completedFileCnt += FileUtil.copyFile(i, currentPath, new FileHandler());
-                        else if(operation == ACTION_CUT)
-                            completedFileCnt += FileUtil.cutFile(i, currentPath, new FileHandler());
-                    } catch (IllegalArgumentException e) {
-                        Toast.makeText(MainActivity.this, "source directory identical with target directory", Toast.LENGTH_SHORT).show();
-                        return completedFileCnt;
-                    }
-                }
-                return completedFileCnt;
-            }
-        };
-
+        FileAsyncTask task = new PasteTask(MainActivity.this, fragment.getCurrentDir(), pasteBin, pasteBinAction);
         if(mainService != null){
             mainService.addTask(task);
         }
@@ -408,36 +397,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void executeDelete() {
-        FileAsyncTask task = new FileAsyncTask() {
-            ArrayList<File> filesToDelete = new ArrayList<>();
-            int completedFileCnt = 0;
-            @Override
-            protected void onPostExecute(Integer aInteger) {
-                super.onPostExecute(aInteger);
-                if(fragment.getCurrentDir().equals(currentDirectory)) {
-                    fragment.refreshCurrentDir();
-                }
-            }
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                currentDirectory = fragment.getCurrentDir();
-                taskName = "paste to " + currentDirectory.getPath();
-                filesToDelete.addAll(selectedFiles);
-                currentDirectory = fragment.getCurrentDir();
-            }
-
-            @Override
-            protected Integer doInBackground(String... params) {
-                Looper.prepare();
-                completedFileCnt = 0;
-                for (File i : filesToDelete) {
-                    completedFileCnt += FileUtil.deleteFile(i);
-                }
-                return completedFileCnt;
-            }
-        };
+        FileAsyncTask task = new DeleteTask(MainActivity.this, fragment.getCurrentDir(), selectedFiles);
         if(mainService != null) {
             mainService.addTask(task);
         }
@@ -546,165 +506,5 @@ public class MainActivity extends AppCompatActivity
         smallButtonShowing = false;
     }
 
-    class FileExistsConfirmDialog extends BlockingDialog {
-        public static final int DIALOG_OVERRIDE = 0x0,
-                            DIALOG_CANCEL = 0x1,
-                            DIALOG_OVERRIDE_FOR_ALL = 0x2;
 
-        File srcFile, dstFile;
-
-        public FileExistsConfirmDialog(Context context, File _srcFile, File _dstFile) {
-            super(context, "title", "message");
-            this.srcFile = _srcFile;
-            this.dstFile = _dstFile;
-            setFiles();
-        }
-
-
-        public void setFiles() {
-            FileListItem item1 = (FileListItem) findViewById(R.id.file1);
-            FileListItem item2 = (FileListItem) findViewById(R.id.file2);
-            item1.setFile(srcFile);
-            item2.setFile(dstFile);
-            item1.getCheckBox().setVisibility(View.GONE);
-            item2.getCheckBox().setVisibility(View.GONE);
-        }
-
-        @Override
-        public void onCreate() {
-            super.onCreate(null);
-            setTheme(R.style.AppTheme);
-            setTitle("file conflict");
-            setContentView(R.layout.dialog_blocking);
-            findViewById(R.id.cancelBtn).setOnClickListener(new android.view.View.OnClickListener() {
-                @Override
-                public void onClick(View paramView) {
-                    endDialog(DIALOG_CANCEL);
-                }
-            });
-            findViewById(R.id.okBtn).setOnClickListener(new android.view.View.OnClickListener() {
-                @Override
-                public void onClick(View paramView) {
-                    endDialog(DIALOG_OVERRIDE);
-                }
-            });
-            findViewById(R.id.forall).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    endDialog(DIALOG_OVERRIDE_FOR_ALL);
-                }
-            });
-        }
-    }
-
-    class DeleteDialog extends android.app.Dialog {
-        TextView deleteInfoText;
-        ButtonFlat deleteBtn, cancelBtn;
-
-        public DeleteDialog(Context context) {
-            super(context);
-            setTheme(R.style.AppTheme);
-            setTitle("delete");
-            setContentView(R.layout.dialog_delete);
-
-            deleteInfoText = (TextView)findViewById(R.id.deleteInfoText);
-            deleteBtn = (ButtonFlat)findViewById(R.id.btnDelete);
-            cancelBtn = (ButtonFlat)findViewById(R.id.btnCancel);
-        }
-
-        public TextView getDeleteInfoText() {
-            return deleteInfoText;
-        }
-
-        public View getButtonDelete() {
-            return deleteBtn;
-        }
-
-        public View getButtonCancel() {
-            return cancelBtn;
-        }
-    }
-
-    class RenameDialog extends android.app.Dialog {
-        EditText originalNameText, newNameText;
-        ButtonFlat renameBtn, cancelBtn;
-
-        public RenameDialog(Context context) {
-            super(context);
-            setTheme(R.style.AppTheme);
-            setTitle("rename");
-            setContentView(R.layout.dialog_rename);
-            originalNameText = (EditText)findViewById(R.id.editText1);
-            newNameText = (EditText)findViewById(R.id.editText2);
-            renameBtn = (ButtonFlat)findViewById(R.id.btnRename);
-            cancelBtn = (ButtonFlat)findViewById(R.id.btnCancel);
-        }
-
-        public View getButtonAccept(){
-            return renameBtn;
-        }
-
-        public View getButtonCancel(){
-            return cancelBtn;
-        }
-
-        public EditText getOriginalNameText () {
-            return originalNameText;
-        }
-
-        public EditText getNewNameText () {
-            return newNameText;
-        }
-    }
-
-    class NewFileOrFolderDialog extends android.app.Dialog {
-        EditText newFileNameText;
-        ButtonFlat cancelBtn, createBtn;
-
-        public NewFileOrFolderDialog(Context context) {
-            super(context);
-            setTheme(R.style.AppTheme);
-            setContentView(R.layout.dialog_newfileorfolder);
-
-            newFileNameText = (EditText)findViewById(R.id.editText);
-            cancelBtn = (ButtonFlat)findViewById(R.id.btnCancel);
-            createBtn = (ButtonFlat)findViewById(R.id.btnCreate);
-        }
-
-        public ButtonFlat getCancelBtn() {
-            return cancelBtn;
-        }
-
-        public ButtonFlat getCreateBtn() {
-            return createBtn;
-        }
-
-        public EditText getNewFileNameText() {
-            return newFileNameText;
-        }
-    }
-
-    class FileHandler implements FileUtil.IFileUtil {
-        boolean overrideForAll = false;
-
-        @Override
-        public boolean onDestiationFileExist(File srcFile, File dstFile) {
-            if(overrideForAll){
-                return true;
-            }
-            FileExistsConfirmDialog dialog = new FileExistsConfirmDialog(MainActivity.this, srcFile, dstFile);
-            int operation = dialog.showDialog();
-            if(operation == FileExistsConfirmDialog.DIALOG_OVERRIDE) {
-                Toast.makeText(MainActivity.this, "override", Toast.LENGTH_SHORT).show();
-                return true;
-            } else if(operation == FileExistsConfirmDialog.DIALOG_CANCEL) {
-                Toast.makeText(MainActivity.this, "not override", Toast.LENGTH_SHORT).show();
-                return false;
-            } else if(operation == FileExistsConfirmDialog.DIALOG_OVERRIDE_FOR_ALL) {
-                overrideForAll = true;
-                return true;
-            }
-            return false;
-        }
-    }
 }
