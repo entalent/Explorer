@@ -6,6 +6,8 @@ import android.os.AsyncTask;
 import java.io.File;
 import java.util.ArrayList;
 
+import cn.edu.bit.cs.explorer.service.MainService;
+
 /**
  * Created by entalent on 2015/11/29.
  */
@@ -14,27 +16,23 @@ public abstract class FileAsyncTask extends AsyncTask<String, Integer, Integer> 
 
     protected File operationDirectory;
 
-    protected ArrayList<File> filesToOperate;
+    protected ArrayList<File> filesToOperate = new ArrayList<>();
 
     protected int completedFileCnt = 0;
 
-    OnPostExecuteListener onPostExecuteListener;
+    protected MainService service;
 
     public FileAsyncTask(Context context, File operationDirectory, ArrayList<File> filesToOperate){
         this.context = context;
         this.operationDirectory = operationDirectory;
-        this.filesToOperate = filesToOperate;
+        this.filesToOperate.addAll(filesToOperate);
     }
 
     public File getOperationDirectory() {
         return operationDirectory;
     }
 
-    public void setOnPostExecuteListener(OnPostExecuteListener listener){
-        this.onPostExecuteListener = listener;
-    }
-
-    public interface OnPostExecuteListener {
-        void onPostExecute();
+    public void setServiceRef(MainService service) {
+        this.service = service;
     }
 }

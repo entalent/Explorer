@@ -2,6 +2,8 @@ package cn.edu.bit.cs.explorer.util;
 
 import android.util.Log;
 
+import com.gc.materialdesign.views.ProgressBarIndeterminate;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -48,17 +50,20 @@ public class FileUtil {
             if(dstFile.exists()) {
                 if(handler != null && handler.onDestiationFileExist(srcFile, dstFile)) {
                     //force overricde
-                    dstFile.delete(); //TODO: is delete necessary?
+                    dstFile.delete();
                 } else {
                     //cancel copy process
                     return 0;
                 }
             }
+
+            //source file and destination file might not be on the same storage device!!!
             if(srcFile.renameTo(dstFile)){
                 return 1;
-            } else {
+            } else if(copyThenDelete(srcFile, dstFile)){
+                return 1;
+            } else
                 return 0;
-            }
         }
     }
 
@@ -99,7 +104,7 @@ public class FileUtil {
                     return 0;
                 }
             }
-            if(copyFile(srcFile.getAbsolutePath(), dstFileName) != 1){
+            if (copyFile(srcFile.getAbsolutePath(), dstFileName) != 1){
                 return 0;
             } else {
                 return 1;
@@ -108,6 +113,11 @@ public class FileUtil {
     }
 
     public static int deleteFile (File file) {
+        try {
+            Thread.sleep(1000);
+        }catch (InterruptedException e) {
+
+        }
         if(file.isDirectory()){
             int cnt = 0;
             File[] files = file.listFiles();
@@ -130,6 +140,13 @@ public class FileUtil {
     }
 
     public static native int copyFile(String srcFile, String dstFile);
+
+    private static boolean copyThenDelete(File srcFile, File dstFile) {
+        if(1 != copyFile(srcFile.getAbsolutePath(), dstFile.getAbsolutePath())) {
+            return false;
+        }
+        return srcFile.delete();
+    }
 
     public interface IFileUtil {
         boolean onDestiationFileExist(File srcFile, File dstFile);

@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
 
 import cn.edu.bit.cs.explorer.ui.customview.FileListItem;
 
-public class SearchActivity extends AppCompatActivity {
+public class SearchActivity extends BaseActivity {
 
     private static ExecutorService SINGLE_TASK_EXECUTOR;
 
@@ -49,7 +49,7 @@ public class SearchActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search);
+        setContent(R.layout.activity_search_content);
 
 
         currentDir = (File) getIntent().getSerializableExtra("path");
@@ -60,8 +60,7 @@ public class SearchActivity extends AppCompatActivity {
         progressBar = (ProgressBarIndeterminate)findViewById(R.id.progressBar);
         toolbar = (Toolbar)findViewById(R.id.toolbar);
 
-        //setSupportActionBar(toolbar);
-        toolbar.setTitle("search in " + currentDir.getName());
+        setTitle("search in " + currentDir.getName());
 
 
         progressBar.setVisibility(View.INVISIBLE);

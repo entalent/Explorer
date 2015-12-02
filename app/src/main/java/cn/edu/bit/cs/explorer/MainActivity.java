@@ -6,9 +6,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.media.audiofx.BassBoost;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
+import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -21,14 +23,10 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.gc.materialdesign.views.ButtonFlat;
 import com.gc.materialdesign.views.ButtonFloat;
 import com.gc.materialdesign.views.ButtonFloatSmall;
 import com.gc.materialdesign.views.ProgressBarIndeterminate;
@@ -38,22 +36,23 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import cn.edu.bit.cs.explorer.service.MainService;
-import cn.edu.bit.cs.explorer.ui.customview.FileListItem;
 import cn.edu.bit.cs.explorer.ui.customview.PathIndicator;
 import cn.edu.bit.cs.explorer.ui.customview.StorageVolumeLabel;
-import cn.edu.bit.cs.explorer.ui.dialog.BlockingDialog;
 import cn.edu.bit.cs.explorer.ui.dialog.DeleteDialog;
 import cn.edu.bit.cs.explorer.ui.dialog.NewFileOrFolderDialog;
 import cn.edu.bit.cs.explorer.ui.dialog.RenameDialog;
 import cn.edu.bit.cs.explorer.ui.fragment.BaseFileListFragment;
-import cn.edu.bit.cs.explorer.util.tasks.DeleteTask;
-import cn.edu.bit.cs.explorer.util.tasks.FileAsyncTask;
 import cn.edu.bit.cs.explorer.util.FileUtil;
 import cn.edu.bit.cs.explorer.util.StorageUtil;
+import cn.edu.bit.cs.explorer.util.TextUtil;
+import cn.edu.bit.cs.explorer.util.tasks.DeleteTask;
+import cn.edu.bit.cs.explorer.util.tasks.FileAsyncTask;
 import cn.edu.bit.cs.explorer.util.tasks.PasteTask;
+import cn.edu.bit.cs.explorer.util.tasks.ZipTask;
 
 public class MainActivity extends AppCompatActivity
-        implements BaseFileListFragment.FileListListener, PathIndicator.OnPathChangeListener {
+        implements BaseFileListFragment.FileListListener, PathIndicator.OnPathChangeListener,
+            NavigationView.OnNavigationItemSelectedListener{
 
     public static final int ACTION_COPY = 0x0;
     public static final int ACTION_CUT = 0x1;
@@ -64,9 +63,10 @@ public class MainActivity extends AppCompatActivity
 
     DrawerLayout drawerLayout;
     Toolbar toolbar;
+    NavigationView navigationView;
     PathIndicator indicator;
     LinearLayout storageList;
-    ButtonFloat addbutton;
+    ButtonFloat addButton;
     ButtonFloatSmall newFileBtn, newFolderBtn, searchBtn;
     FrameLayout cover;
     ProgressBarIndeterminate progressBar;
@@ -102,10 +102,11 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.id_toolbar);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        navigationView = (NavigationView) findViewById(R.id.id_nv_menu);
         indicator = (PathIndicator)findViewById(R.id.path_indicator);
         fragment = (BaseFileListFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
         storageList = (LinearLayout) findViewById(R.id.storageList);
-        addbutton = (ButtonFloat)findViewById(R.id.buttonAdd);
+        addButton = (ButtonFloat)findViewById(R.id.buttonAdd);
         newFileBtn = (ButtonFloatSmall)findViewById(R.id.btnNewFile);
         newFolderBtn = (ButtonFloatSmall)findViewById(R.id.btnNewFolder);
         searchBtn = (ButtonFloatSmall)findViewById(R.id.btnSearch);
@@ -120,6 +121,8 @@ public class MainActivity extends AppCompatActivity
         drawerLayout.setDrawerListener(toggle);
         toggle.syncState(); //show a spinning button on ActionBar
 
+        navigationView.setNavigationItemSelectedListener(this);
+
         fragment.setRootDir(Environment.getExternalStorageDirectory());
         fragment.setFileListListener(MainActivity.this);
 
@@ -128,7 +131,7 @@ public class MainActivity extends AppCompatActivity
 
         refreshStorageVolumes();
 
-        addbutton.setOnClickListener(new View.OnClickListener() {
+        addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!smallButtonShowing)
@@ -221,6 +224,7 @@ public class MainActivity extends AppCompatActivity
                         menu.add("rename").setIcon(R.drawable.ic_create_white_18dp).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
                     }
                     menu.add("select all").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
+                    menu.add("compress").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
                     break;
 
                 case STATE_PASTE:
@@ -303,13 +307,15 @@ public class MainActivity extends AppCompatActivity
                         dialog.dismiss();
                     }
                 });
+            } else if(item.getTitle().equals("select all")) {
+                fragment.selectAll();
+            } else if(item.getTitle().equals("compress")) {
+                executeCompress();
             } else if (item.getTitle().equals("paste")) {
                 executePaste();
                 clearSelectedAndRefrfesh();
                 pasteBin.clear();
 
-            } else if(item.getTitle().equals("select all")) {
-                fragment.selectAll();
             }
             return true;
         }
@@ -337,15 +343,28 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent) {
             int action = intent.getIntExtra("action", 0);
+            //Toast.makeText(MainActivity.this, "received " + action, Toast.LENGTH_SHORT).show();
             if(action == MainService.ACTION_SHOW_PROGRESS){
                 progressBar.setVisibility(View.VISIBLE);
             } else if(action == MainService.ACTION_HIDE_PROGRESS) {
                 progressBar.setVisibility(View.GONE);
-            }if(action == MainService.ACTION_REFRESH_DIRECTORY){
+            } else if(action == MainService.ACTION_REFRESH_DIRECTORY){
                 File file = (File) intent.getSerializableExtra("file");
                 if(file.equals(fragment.getCurrentDir())){
-                    fragment.refreshCurrentDir();
+                    fragment.refreshCurrentContent();
                 }
+            } else if(action == MainService.ACTION_GOTO_DIRECTORY) {
+                File file = (File) intent.getSerializableExtra("file");
+                for(StorageUtil.StorageVolumeInfo i : storageVolumes){
+                    File newRoot = new File(i.path);
+                    if(FileUtil.isChildDirectoty(newRoot, file)){
+                        fragment.setRootDir(newRoot);
+                        indicator.setRootDir(newRoot);
+                        break;
+                    }
+                }
+                fragment.setCurrentDir(file);
+                indicator.setCurrentDir(file);
             }
         }
     };
@@ -357,7 +376,6 @@ public class MainActivity extends AppCompatActivity
 
     public void clearSelectedAndRefrfesh() {
         fragment.deselectAll();
-        fragment.refreshCurrentDir();
         switchActionModeState(STATE_NONE);
     }
 
@@ -420,7 +438,7 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 File newFile = new File(fragment.getCurrentDir() + File.separator + dialog.getNewFileNameText().getText().toString());
                 if(!newFile.exists() && newFile.mkdir()) {
-                    fragment.refreshCurrentDir();
+                    fragment.refreshCurrentContent();
                 } else {
                     Toast.makeText(MainActivity.this, "failed to create new folder", Toast.LENGTH_SHORT).show();
                 }
@@ -450,7 +468,7 @@ public class MainActivity extends AppCompatActivity
                 if(!newFile.exists()) {
                     try {
                         newFile.createNewFile();
-                        fragment.refreshCurrentDir();
+                        fragment.refreshCurrentContent();
                     } catch (IOException e) {
                         Toast.makeText(MainActivity.this, "failed to create new file", Toast.LENGTH_SHORT).show();
                     }
@@ -462,6 +480,24 @@ public class MainActivity extends AppCompatActivity
                 hideSmallButton();
             }
         });
+    }
+
+    private void executeCompress() {
+        //TODO: get zip directory from sharedPreference
+        String zipDir = (getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS) + File.separator + "zipFile");
+        String zipFileName;
+        if(selectedFiles.size() == 1) {
+            zipFileName = selectedFiles.get(0).getName();
+        } else {
+            zipFileName = fragment.getCurrentDir().getName();
+        }
+        zipFileName += " - " + TextUtil.formatTimeStr(System.currentTimeMillis()) + ".zip";
+        File zipFile = new File(zipDir + File.separator + zipFileName);
+        System.out.println("compress " + zipFile.getAbsolutePath());
+        ZipTask zipTask = new ZipTask(MainActivity.this, fragment.getCurrentDir(), selectedFiles, zipFile);
+        if(mainService != null) {
+            mainService.addTask(zipTask);
+        }
     }
 
     private void showSmallButtons() {
@@ -480,7 +516,7 @@ public class MainActivity extends AppCompatActivity
         rotateAnim.setDuration(700);
         rotateAnim.setFillBefore(true);
         rotateAnim.setFillAfter(true);
-        addbutton.startAnimation(rotateAnim);
+        addButton.startAnimation(rotateAnim);
         cover.setVisibility(View.VISIBLE);
         smallButtonShowing = true;
     }
@@ -501,10 +537,24 @@ public class MainActivity extends AppCompatActivity
         //FIXME: animation ?!
         rotateAnim.setFillBefore(true);
         rotateAnim.setFillAfter(true);
-        addbutton.startAnimation(rotateAnim);
+        addButton.startAnimation(rotateAnim);
         cover.setVisibility(View.GONE);
         smallButtonShowing = false;
     }
 
 
+    @Override
+    public boolean onNavigationItemSelected(MenuItem menuItem) {
+        int id = menuItem.getItemId();
+        switch(id) {
+            case R.id.item_settings:
+                Intent i = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(i);
+                break;
+            case R.id.item_adbw:
+                Toast.makeText(MainActivity.this, "ADB Wifi", Toast.LENGTH_LONG).show();
+                break;
+        }
+        return true;
+    }
 }

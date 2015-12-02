@@ -1,6 +1,7 @@
 #include "jni.h"
 #include <string.h>
 #include <stdio.h>
+#include "zlib.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -60,6 +61,8 @@ char *jstringToCharSequence(JNIEnv *env, jstring jstr) {
     env->ReleaseByteArrayElements(barr, ba, 0);
     return rtn;
 }
+
+
 
 #ifdef __cplusplus
 }

@@ -21,12 +21,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="create"
+            android:background="@color/colorPrimary"
             android:id="@+id/btnCreate" />
 
         <com.gc.materialdesign.views.ButtonFlat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="cancel"
+            android:background="@color/colorAccent"
             android:id="@+id/btnCancel" />
     </LinearLayout>
 </LinearLayout>

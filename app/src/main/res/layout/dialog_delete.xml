@@ -23,11 +23,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="delete"
+            android:background="@color/colorPrimary"
             android:id="@+id/btnDelete" />
 
         <com.gc.materialdesign.views.ButtonFlat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@color/colorAccent"
             android:text="cancel"
             android:id="@+id/btnCancel" />
     </LinearLayout>

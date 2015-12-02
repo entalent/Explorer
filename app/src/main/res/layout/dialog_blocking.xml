@@ -42,22 +42,23 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/okBtn"
-            android:background="#1E88E5"
+            android:background="@color/colorPrimary"
             android:text="override"/>
 
         <com.gc.materialdesign.views.ButtonFlat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/cancelBtn"
-            android:background="#1E88E5"
-            android:text="cancel"/>
+            android:id="@+id/forall"
+            android:background="@color/colorPrimary"
+            android:text="override for all"/>
 
         <com.gc.materialdesign.views.ButtonFlat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/forall"
-            android:background="#1E88E5"
-            android:text="override for all"/>
+            android:id="@+id/cancelBtn"
+            android:background="@color/colorAccent"
+            android:text="cancel"
+            android:layout_gravity="right" />
     </LinearLayout>
 
 </LinearLayout>

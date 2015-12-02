@@ -1,57 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="wrap_content"
-    android:layout_height="match_parent"
+    android:layout_width="wrap_content" android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:padding="16dp">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="original file name:"
-        android:id="@+id/textView5"
+        android:text="Original file name"
+        android:id="@+id/textView5" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="14"
+        android:id="@+id/editText1"
         android:editable="false"/>
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/editText1"
-        android:layout_gravity="center_horizontal"
-        android:ems="14"/>
-
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="new file name:"
-        android:id="@+id/textView6"
-        android:ems="14"/>
+        android:text="Small Text"
+        android:id="@+id/textView6" />
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/editText2">
-        <requestFocus/>
-    </EditText>
+        android:ems="14"
+        android:id="@+id/editText2" />
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:gravity="right"
-        android:padding="8dp">
+
+        android:gravity="right">
 
         <com.gc.materialdesign.views.ButtonFlat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/btnRename"
-            android:text="rename"/>
+            android:text="rename"
+            android:background="@color/colorPrimary"
+            android:id="@+id/btnRename" />
 
         <com.gc.materialdesign.views.ButtonFlat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/btnCancel"
-            android:text="cancel"/>
+            android:text="cancel"
+            android:background="@color/colorAccent"
+            android:id="@+id/btnCancel" />
     </LinearLayout>
 </LinearLayout>

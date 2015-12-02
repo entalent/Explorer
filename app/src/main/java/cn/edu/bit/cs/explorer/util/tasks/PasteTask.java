@@ -25,9 +25,7 @@ public class PasteTask extends FileAsyncTask {
     protected void onPostExecute(Integer aInteger) {
         super.onPostExecute(aInteger);
         Toast.makeText(context, "pasted " + completedFileCnt + " file(s)", Toast.LENGTH_SHORT).show();
-        if(this.onPostExecuteListener != null) {
-            onPostExecuteListener.onPostExecute();
-        }
+        service.sendRefreshDirectory(operationDirectory);
     }
 
     @Override

@@ -115,7 +115,6 @@ public class BaseFileListFragment extends Fragment
         }
     }
 
-    @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_file_list, container, false);
@@ -128,13 +127,14 @@ public class BaseFileListFragment extends Fragment
     }
 
     private void refreshView() {
-        selectedFiles.clear();
-        invokeOnSelectedFilesChange();
         ((BaseAdapter)adapterView.getAdapter()).notifyDataSetChanged();
-        adapterView.setSelection(0);
     }
 
-    public void refreshCurrentDir() {
+    public void refreshCurrentSelected() {
+        refreshView();
+    }
+
+    public void refreshCurrentContent() {
         setCurrentDir(currentDir);
     }
 
@@ -143,7 +143,7 @@ public class BaseFileListFragment extends Fragment
         setCurrentDir(rootDir);
     }
 
-    public void setCurrentDir(File currentDir){
+    public void setCurrentDir(File currentDir) {
         if(this.rootDir == null){
             throw new IllegalStateException("root directory not set");
         }
@@ -163,7 +163,8 @@ public class BaseFileListFragment extends Fragment
         for(File i : files){
             filesInCurrentDir.add(i);
         }
-        refreshView();
+        ((BaseAdapter)adapterView.getAdapter()).notifyDataSetChanged();
+        adapterView.setSelection(0);
     }
 
     public void setFileListListener(FileListListener listener){
@@ -214,13 +215,13 @@ public class BaseFileListFragment extends Fragment
     public void selectAll() {
         selectedFiles.clear();
         selectedFiles.addAll(filesInCurrentDir);
-        refreshCurrentDir();
+        refreshCurrentSelected();
         invokeOnSelectedFilesChange();
     }
 
     public void deselectAll() {
         selectedFiles.clear();
-        refreshCurrentDir();
+        refreshCurrentSelected();
         invokeOnSelectedFilesChange();
     }
 

@@ -15,21 +15,23 @@ import java.util.concurrent.Executors;
 
 import cn.edu.bit.cs.explorer.R;
 import cn.edu.bit.cs.explorer.util.tasks.FileAsyncTask;
+import cn.edu.bit.cs.explorer.util.tasks.ZipTask;
 
 public class MainService extends Service {
 
     public static final int ACTION_SHOW_PROGRESS = 0x0,
                         ACTION_HIDE_PROGRESS = 0x1,
-                        ACTION_REFRESH_DIRECTORY = 0x2;
+                        ACTION_REFRESH_DIRECTORY = 0x2,
+                        ACTION_GOTO_DIRECTORY = 0x3;
 
     private static ExecutorService SINGLE_TASK_EXECUTOR;
 
     static {
-        SINGLE_TASK_EXECUTOR = (ExecutorService) Executors.newSingleThreadExecutor();
+        SINGLE_TASK_EXECUTOR = Executors.newSingleThreadExecutor();
         SINGLE_TASK_EXECUTOR.submit(new Runnable() {
             @Override
             public void run() {
-                //call Looper.prepare() only 1 time in this thread
+                //call Looper.prepare() once and only once in this thread
                 Looper.prepare();
             }
         });
@@ -50,7 +52,6 @@ public class MainService extends Service {
 
     void beginExecute() {
         isExecuting = true;
-        //Toast.makeText(MainService.this, "start execute", Toast.LENGTH_SHORT).show();
 
         Intent i1 = new Intent();
         i1.setAction(getString(R.string.action_main_service));
@@ -63,18 +64,9 @@ public class MainService extends Service {
             synchronized (tasks) {
                 taskToExecute = tasks.poll();
             }
-            taskToExecute.setOnPostExecuteListener(new FileAsyncTask.OnPostExecuteListener() {
-                @Override
-                public void onPostExecute() {
-                    File directoryToRefresh = taskToExecute.getOperationDirectory();
-                    Intent i = new Intent();
-                    i.setAction(getString(R.string.action_main_service));
-                    i.putExtra("action", ACTION_REFRESH_DIRECTORY);
-                    i.putExtra("file", directoryToRefresh);
-                    sendBroadcast(i);
-                }
-            });
-            taskToExecute.execute();
+
+            taskToExecute.setServiceRef(this);
+            taskToExecute.executeOnExecutor(SINGLE_TASK_EXECUTOR);
         }
 
         Intent i2 = new Intent();
@@ -82,7 +74,6 @@ public class MainService extends Service {
         i2.putExtra("action", ACTION_HIDE_PROGRESS);
         sendBroadcast(i2);
 
-        //Toast.makeText(MainService.this, "execute finish", Toast.LENGTH_SHORT).show();
         isExecuting = false;
     }
 
@@ -110,5 +101,19 @@ public class MainService extends Service {
         return isExecuting;
     }
 
+    public void sendRefreshDirectory(File directoryToRefresh) {
+        Intent intent = new Intent();
+        intent.setAction(getString(R.string.action_main_service));
+        intent.putExtra("action", ACTION_REFRESH_DIRECTORY);
+        intent.putExtra("file", directoryToRefresh);
+        sendBroadcast(intent);
+    }
 
+    public void sendGotoDirectory(File directoryToGo) {
+        Intent intent = new Intent();
+        intent.setAction(getString(R.string.action_main_service));
+        intent.putExtra("action", ACTION_GOTO_DIRECTORY);
+        intent.putExtra("file", directoryToGo);
+        sendBroadcast(intent);
+    }
 }
