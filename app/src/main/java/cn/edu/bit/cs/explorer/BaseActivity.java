@@ -1,5 +1,6 @@
 package cn.edu.bit.cs.explorer;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -30,5 +31,13 @@ public class BaseActivity extends AppCompatActivity {
     protected void setContent(int resId) {
         View view = LayoutInflater.from(this).inflate(resId, null);
         frameLayout.addView(view);
+    }
+
+    protected void setToolbarBackgroundColor(int color) {
+        toolbar.setBackgroundColor(color);
+    }
+
+    protected void setToolbarBackground(Drawable drawable) {
+        toolbar.setBackground(drawable);
     }
 }

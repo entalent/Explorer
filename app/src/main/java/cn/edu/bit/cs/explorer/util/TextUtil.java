@@ -48,13 +48,10 @@ public class TextUtil {
         return type;
     }
 
-    public static int getSdkVersion() {
-        int version = 0;
-        try {
-            version = Integer.valueOf(android.os.Build.VERSION.SDK);
-        } catch (Exception e) {
-
-        }
-        return version;
+    public static String getIPStringFromInt(int ipAddress) {
+        return (ipAddress & 0xFF ) + "." +
+                ((ipAddress >> 8 ) & 0xFF) + "." +
+                ((ipAddress >> 16 ) & 0xFF) + "." +
+                ( ipAddress >> 24 & 0xFF) ;
     }
 }
