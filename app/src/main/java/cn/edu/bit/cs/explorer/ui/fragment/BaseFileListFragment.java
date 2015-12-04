@@ -1,5 +1,6 @@
 package cn.edu.bit.cs.explorer.ui.fragment;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,15 +12,20 @@ import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.gc.materialdesign.widgets.Dialog;
 
 import org.w3c.dom.Text;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import cn.edu.bit.cs.explorer.R;
 import cn.edu.bit.cs.explorer.ui.customview.FileListItem;
 import cn.edu.bit.cs.explorer.util.FileUtil;
+import cn.edu.bit.cs.explorer.util.TextUtil;
 
 /**
  * Created by entalent on 2015/11/11.
@@ -160,8 +166,18 @@ public class BaseFileListFragment extends Fragment
         selectedFiles.clear();
         invokeOnSelectedFilesChange();
         File[] files = currentDir.listFiles();
-        for(File i : files){
-            filesInCurrentDir.add(i);
+        if(files != null) {
+            for (File i : files) {
+                filesInCurrentDir.add(i);
+            }
+            //TODO: changeable comparator
+            Collections.sort(filesInCurrentDir);
+        } else {
+            if(TextUtil.getSdkVersion() >= 23)
+                Toast.makeText(getActivity(), "On Android 6.0 or above, " +
+                                "you must grant the permission of \'read external storage\' to use this file explorer.",
+                        Toast.LENGTH_LONG).show();
+
         }
         ((BaseAdapter)adapterView.getAdapter()).notifyDataSetChanged();
         adapterView.setSelection(0);

@@ -6,7 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.media.audiofx.BassBoost;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
@@ -27,9 +29,12 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import android.widget.Button;
 import com.gc.materialdesign.views.ButtonFloat;
 import com.gc.materialdesign.views.ButtonFloatSmall;
 import com.gc.materialdesign.views.ProgressBarIndeterminate;
+
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.IOException;
@@ -115,6 +120,8 @@ public class MainActivity extends AppCompatActivity
 
         setSupportActionBar(toolbar);
 
+        //toolbar.setTitleTextColor(Color.WHITE);
+
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout,
                 toolbar, R.string.drawer_open,
                 R.string.drawer_close);
@@ -185,6 +192,14 @@ public class MainActivity extends AppCompatActivity
     public void onOpenFileOrDirectory(File file) {
         if(file.isDirectory())
             indicator.setCurrentDir(file);
+        else {
+            Intent intent = new Intent();
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setAction(android.content.Intent.ACTION_VIEW);
+            String type = TextUtil.getMimeTypeFromFile(file);
+            intent.setDataAndType(Uri.fromFile(file), type);
+            startActivity(intent);
+        }
     }
 
     @Override
@@ -225,6 +240,7 @@ public class MainActivity extends AppCompatActivity
                     }
                     menu.add("select all").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
                     menu.add("compress").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
+                    menu.add("share").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
                     break;
 
                 case STATE_PASTE:
@@ -298,6 +314,7 @@ public class MainActivity extends AppCompatActivity
 
                         clearSelectedAndRefrfesh();
                         dialog.dismiss();
+                        fragment.refreshCurrentContent();
                     }
                 });
                 dialog.getButtonCancel().setOnClickListener(new View.OnClickListener() {
@@ -315,6 +332,23 @@ public class MainActivity extends AppCompatActivity
                 executePaste();
                 clearSelectedAndRefrfesh();
                 pasteBin.clear();
+
+            } else if(item.getTitle().equals("share")) {
+                Intent intent;
+                if(selectedFiles.size() > 1) {
+                    intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+                    intent.setType("*/*");
+                    ArrayList<Uri> uris = new ArrayList<>();
+                    for(File i : selectedFiles) {
+                        uris.add(Uri.fromFile(i));
+                    }
+                    intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                } else {
+                    intent = new Intent(Intent.ACTION_SEND);
+                    intent.setType(TextUtil.getMimeTypeFromFile(selectedFiles.get(0)));
+                    intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(selectedFiles.get(0)));
+                }
+                startActivity(Intent.createChooser(intent, "share"));
 
             }
             return true;
@@ -444,6 +478,7 @@ public class MainActivity extends AppCompatActivity
                 }
                 dialog.dismiss();
                 hideSmallButton();
+                fragment.refreshCurrentContent();
             }
 
         });
@@ -478,6 +513,7 @@ public class MainActivity extends AppCompatActivity
                 }
                 dialog.dismiss();
                 hideSmallButton();
+                fragment.refreshCurrentContent();
             }
         });
     }

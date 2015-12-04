@@ -108,13 +108,12 @@ public class ZipUtil {
                     output.close();
                 }
             } catch (Exception e) {
-                return entryCnt;
+                return -1;
             } finally {
                 if(input != null) input.close();
                 if(output != null) output.close();
                 zipFile.close();
                 zipInput.close();
-
             }
         }
         zipFile.close();
