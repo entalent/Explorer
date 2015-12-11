@@ -4,14 +4,15 @@
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
-    <uses-permission-sdk-23 android:name="android.permission.READ_EXTERNAL_STORAGE"
+    <uses-permission-sdk-23
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="23" />
-
-    <uses-permission-sdk-23 android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    <uses-permission-sdk-23
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="23" />
 
     <application
@@ -22,18 +23,16 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".SearchActivity">
+        <activity android:name=".SearchActivity" >
         </activity>
-        <activity
-            android:name=".AdbWifiActivity">
+        <activity android:name=".AdbWifiActivity" >
         </activity>
 
         <service
@@ -44,8 +43,16 @@
 
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings">
+            android:label="@string/title_activity_settings" >
         </activity>
+        <activity android:name=".FTPServerActivity" >
+        </activity>
+
+        <service
+            android:name=".service.FtpService"
+            android:enabled="true"
+            android:exported="true" >
+        </service>
     </application>
 
 </manifest>

@@ -12,6 +12,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         >
+
+        <android.support.design.widget.CoordinatorLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:id="@+id/coor">
+
     <LinearLayout
         android:id="@+id/id_main_content"
         android:layout_width="match_parent"
@@ -19,16 +28,19 @@
         android:orientation="vertical"
         android:theme="@style/AppTheme.AppBarOverlay">
 
+        <android.support.design.widget.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:id="@+id/id_app_bar">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/id_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:theme="@style/MyActionBarTheme"
-            android:background="?attr/colorPrimary"
             android:fitsSystemWindows="true"
             />
-
 
         <cn.edu.bit.cs.explorer.ui.customview.PathIndicator
             android:layout_width="match_parent"
@@ -36,7 +48,10 @@
             android:id="@+id/path_indicator"
             android:layout_gravity="center_horizontal"
             android:elevation="10dp"
+            app:layout_scrollFlags="scroll|enterAlways"
             />
+
+        </android.support.design.widget.AppBarLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -48,7 +63,9 @@
                 android:name="cn.edu.bit.cs.explorer.ui.fragment.BaseFileListFragment"
                 android:id="@+id/fragment"
                 android:layout_gravity="center_horizontal"
-                tools:layout="@layout/fragment_file_list" />
+                tools:layout="@layout/fragment_file_list"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                 />
 
             <com.gc.materialdesign.views.ProgressBarIndeterminate
                 android:background="@color/colorPrimaryDark"
@@ -59,11 +76,9 @@
                 android:layout_alignParentBottom="true"
                 android:layout_centerHorizontal="true" />
         </RelativeLayout>
-
-
-
-
     </LinearLayout>
+
+        </android.support.design.widget.CoordinatorLayout>
 
         <FrameLayout
             android:layout_width="match_parent"

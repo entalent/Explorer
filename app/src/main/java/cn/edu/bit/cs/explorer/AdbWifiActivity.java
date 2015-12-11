@@ -27,6 +27,7 @@ public class AdbWifiActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContent(R.layout.activity_adb_wifi);
+        setTitle("ADB Wifi");
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if(PackageManager.PERMISSION_GRANTED !=
@@ -90,7 +91,7 @@ public class AdbWifiActivity extends BaseActivity {
                 port = -1;
             }
             if(port != -1) {
-                ((TextView)findViewById(R.id.textView)).append("adb listens on port " + port);
+                ((TextView)findViewById(R.id.textView)).append("adb listens on port " + port + "\n\nexecute \"adb connect " + IP + ":" +  port + "\" on PC to connect");
                 ((Button)findViewById(R.id.button)).setText("stop adb wifi");
             } else {
                 ((TextView)findViewById(R.id.textView)).append("adb not listening");

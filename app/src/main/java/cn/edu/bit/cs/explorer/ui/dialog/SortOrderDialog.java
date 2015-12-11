@@ -21,6 +21,7 @@ public class SortOrderDialog extends BlockingDialog {
     @Override
     public void onCreate() {
         setContentView(R.layout.dialog_sort_order);
+        setTitle("select sort method");
         radioGroup = (RadioGroup) findViewById(R.id.radioGroup);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override

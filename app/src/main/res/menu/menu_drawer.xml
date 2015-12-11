@@ -9,4 +9,9 @@
         android:icon="@drawable/ic_settings_applications_black_24dp"
         android:id="@+id/item_adbw"
         />
+
+    <item android:title="FTP Server"
+        android:icon="@drawable/ic_settings_applications_black_24dp"
+        android:id="@+id/item_ftp_server"
+        />
 </menu>

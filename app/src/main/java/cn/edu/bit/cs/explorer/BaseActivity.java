@@ -1,5 +1,6 @@
 package cn.edu.bit.cs.explorer;
 
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -21,15 +22,18 @@ public class BaseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTheme(R.style.AppTheme_NoActionBar);
+
         setContentView(R.layout.activity_base_main);
         frameLayout = (FrameLayout) findViewById(R.id.id_main_content);
         toolbar = (Toolbar)findViewById(R.id.toolbar);
         setTitle("BaseActivity");
+        setToolbarBackground(getResources().getDrawable(R.drawable.bg));
         setSupportActionBar(toolbar);
     }
 
     protected void setContent(int resId) {
         View view = LayoutInflater.from(this).inflate(resId, null);
+        view.setFitsSystemWindows(true);
         frameLayout.addView(view);
     }
 

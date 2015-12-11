@@ -1,6 +1,7 @@
 package cn.edu.bit.cs.explorer;
 
 import android.Manifest;
+import android.animation.ObjectAnimator;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -13,6 +14,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -22,12 +25,17 @@ import android.support.v7.widget.Toolbar;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
+import android.widget.AbsListView;
 import android.widget.FrameLayout;
+import android.widget.GridView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.gc.materialdesign.views.ButtonFloat;
@@ -85,6 +93,8 @@ public class MainActivity extends AppCompatActivity
     ButtonFloatSmall newFileBtn, newFolderBtn, searchBtn;
     FrameLayout cover;
     ProgressBarIndeterminate progressBar;
+    CoordinatorLayout coor;
+    AppBarLayout bar;
 
     BaseFileListFragment fragment;
 
@@ -141,6 +151,11 @@ public class MainActivity extends AppCompatActivity
         searchBtn = (ButtonFloatSmall)findViewById(R.id.btnSearch);
         cover = (FrameLayout)findViewById(R.id.cover);
         progressBar = (ProgressBarIndeterminate)findViewById(R.id.progressBar);
+        coor = (CoordinatorLayout)findViewById(R.id.coor);
+        bar =(AppBarLayout)findViewById(R.id.id_app_bar);
+
+        bar.setBackground(getResources().getDrawable(R.drawable.bg));
+
 
         setSupportActionBar(toolbar);
 
@@ -275,6 +290,10 @@ public class MainActivity extends AppCompatActivity
             case R.id.item_adbw:
                 Intent i2 = new Intent(MainActivity.this, AdbWifiActivity.class);
                 startActivity(i2);
+                break;
+            case R.id.item_ftp_server:
+                Intent i3 = new Intent(MainActivity.this, FTPServerActivity.class);
+                startActivity(i3);
                 break;
         }
         return true;

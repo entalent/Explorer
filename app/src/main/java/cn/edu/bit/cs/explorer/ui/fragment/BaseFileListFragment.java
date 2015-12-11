@@ -183,6 +183,10 @@ public class BaseFileListFragment extends Fragment
         this.listener = listener;
     }
 
+    public AdapterView getAdapterView() {
+        return adapterView;
+    }
+
     public void setSortMethod(int sortMethod) {
         if(sortMethod == this.currentSortMethod) {
             comparator.setReversed(!comparator.isReversed());
