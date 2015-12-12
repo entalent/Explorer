@@ -7,8 +7,17 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/choose_file_to_keep"
+        android:id="@+id/textView8"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="source file"
+        android:text="@string/message_source_file"
         android:id="@+id/textView" />
 
     <cn.edu.bit.cs.explorer.ui.customview.FileListItem
@@ -21,7 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="file that already exists"
+        android:text="@string/message_existing_file"
         android:id="@+id/textView4" />
 
     <cn.edu.bit.cs.explorer.ui.customview.FileListItem
@@ -41,23 +50,16 @@
         <com.gc.materialdesign.views.ButtonFlat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/okBtn"
-            android:background="@color/colorPrimary"
-            android:text="override"/>
-
-        <com.gc.materialdesign.views.ButtonFlat
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:id="@+id/forall"
             android:background="@color/colorPrimary"
-            android:text="override for all"/>
+            android:text="@string/override_for_all"/>
 
         <com.gc.materialdesign.views.ButtonFlat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/cancelBtn"
             android:background="@color/colorAccent"
-            android:text="cancel"
+            android:text="@string/cancel"
             android:layout_gravity="right" />
     </LinearLayout>
 

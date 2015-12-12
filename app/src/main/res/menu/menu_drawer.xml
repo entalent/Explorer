@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <group android:title="options">
 
-    <item android:title="@string/drawer_menu_settings"
+    <item android:title="@string/title_activity_settings"
         android:icon="@drawable/ic_settings_applications_black_24dp"
         android:id="@+id/item_settings"
         />
 
-    <item android:title="ADB Wifi"
+    <item android:title="@string/title_activity_adb_wifi"
         android:icon="@drawable/ic_settings_applications_black_24dp"
         android:id="@+id/item_adbw"
         />
 
-    <item android:title="FTP Server"
+    <item android:title="@string/title_activity_ftp_server"
         android:icon="@drawable/ic_settings_applications_black_24dp"
         android:id="@+id/item_ftp_server"
         />
 
-    </group>
 </menu>

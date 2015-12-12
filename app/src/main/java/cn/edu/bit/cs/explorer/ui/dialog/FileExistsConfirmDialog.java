@@ -2,6 +2,7 @@ package cn.edu.bit.cs.explorer.ui.dialog;
 
 import android.content.Context;
 import android.view.View;
+import android.widget.Filter;
 
 import java.io.File;
 
@@ -14,7 +15,8 @@ import cn.edu.bit.cs.explorer.ui.customview.FileListItem;
 public class FileExistsConfirmDialog extends BlockingDialog {
     public static final int DIALOG_OVERRIDE = 0x0,
             DIALOG_CANCEL = 0x1,
-            DIALOG_OVERRIDE_FOR_ALL = 0x2;
+            DIALOG_OVERRIDE_FOR_ALL = 0x2,
+            DIALOG_SKIP = 0x3;
 
     File srcFile, dstFile;
 
@@ -33,12 +35,14 @@ public class FileExistsConfirmDialog extends BlockingDialog {
         item2.setFile(dstFile);
         item1.getCheckBox().setVisibility(View.GONE);
         item2.getCheckBox().setVisibility(View.GONE);
+        item1.setDetailType(FileListItem.TYPE_PATH);
+        item2.setDetailType(FileListItem.TYPE_PATH);
     }
 
     @Override
     public void onCreate() {
         super.onCreate(null);
-        setTitle("file conflict");
+        setTitle(getContext().getString(R.string.message_paste_confilct));
         setContentView(R.layout.dialog_blocking);
         findViewById(R.id.cancelBtn).setOnClickListener(new android.view.View.OnClickListener() {
             @Override
@@ -46,16 +50,22 @@ public class FileExistsConfirmDialog extends BlockingDialog {
                 endDialog(DIALOG_CANCEL);
             }
         });
-        findViewById(R.id.okBtn).setOnClickListener(new android.view.View.OnClickListener() {
-            @Override
-            public void onClick(View paramView) {
-                endDialog(DIALOG_OVERRIDE);
-            }
-        });
         findViewById(R.id.forall).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 endDialog(DIALOG_OVERRIDE_FOR_ALL);
+            }
+        });
+        findViewById(R.id.file1).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                endDialog(DIALOG_SKIP);
+            }
+        });
+        findViewById(R.id.file2).setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                endDialog(DIALOG_OVERRIDE);
             }
         });
     }

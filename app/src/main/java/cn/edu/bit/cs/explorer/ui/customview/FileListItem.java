@@ -25,7 +25,11 @@ public class FileListItem extends RelativeLayout {
     public static final int MODE_LIST_ITEM = 0x0,
                         MODE_GRID_ITEM = 0x1;
 
+    public static final int TYPE_TIME = 0x0,
+                        TYPE_PATH = 0x1;
+
     int layoutMode = MODE_LIST_ITEM;
+    int detailType = TYPE_TIME;
 
     boolean isParentDirectory;
     File file;
@@ -86,8 +90,10 @@ public class FileListItem extends RelativeLayout {
                 textSize.setText(TextUtil.formatSizeStr(f.length()));
             }
             if(textDetail != null){
-                //textDetail.setText(f.getAbsolutePath());
-                textDetail.setText(TextUtil.formatTimeStr(f.lastModified()));
+                if(detailType == TYPE_PATH)
+                    textDetail.setText(f.getAbsolutePath());
+                if(detailType == TYPE_TIME)
+                    textDetail.setText(TextUtil.formatTimeStr(f.lastModified()));
             }
             checkBox.setVisibility(View.VISIBLE);
         }
@@ -142,6 +148,10 @@ public class FileListItem extends RelativeLayout {
             }
         }
         icon.setImageDrawable(iconDrawable);
+    }
+
+    public void setDetailType(int type){
+        this.detailType = type;
     }
 
 }

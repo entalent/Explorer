@@ -6,6 +6,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 
+import cn.edu.bit.cs.explorer.R;
 import cn.edu.bit.cs.explorer.util.FileUtil;
 
 /**
@@ -20,7 +21,7 @@ public class DeleteTask extends FileAsyncTask {
     @Override
     protected void onPostExecute(Integer aInteger) {
         super.onPostExecute(aInteger);
-        Toast.makeText(context, "deleted " + completedFileCnt + " file(s)", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, String.format(service.getString(R.string.message_deleted_files), completedFileCnt), Toast.LENGTH_SHORT).show();
         service.sendRefreshDirectory(operationDirectory);
     }
 

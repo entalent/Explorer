@@ -14,8 +14,9 @@ public class FileComparators {
             int flag = super.compare(lhs, rhs);
             if(flag == 0) {
                 flag = lhs.getName().compareTo(rhs.getName());
+                flag = reversed ? flag : -flag;
             }
-            return reversed ? flag : -flag;
+            return flag;
         }
     }
 
@@ -30,8 +31,9 @@ public class FileComparators {
                 } else {
                     flag = len1 < len2 ? -1 : 1;
                 }
+                flag = reversed ? flag : -flag;
             }
-            return reversed ? flag : -flag;
+            return flag;
         }
     }
 
@@ -46,8 +48,9 @@ public class FileComparators {
                 } else {
                     flag = t1 < t2 ? -1 : 1;
                 }
+                flag = reversed ? flag : -flag;
             }
-            return reversed ? flag : -flag;
+            return flag;
         }
     }
 }

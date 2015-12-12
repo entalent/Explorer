@@ -40,13 +40,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Small Text"
-        android:ellipsize="end"
+        android:text="@string/loremipsum"
+        android:ellipsize="start"
         android:maxLines="1"
         android:id="@+id/text_detail"
         android:layout_alignBottom="@+id/imageView"
         android:layout_alignLeft="@+id/text_name"
-        android:layout_alignStart="@+id/text_name" />
+        android:layout_alignStart="@+id/text_name"
+        android:layout_toLeftOf="@+id/text_size"
+        android:paddingRight="10dp" />
 
     <TextView
         android:layout_width="wrap_content"

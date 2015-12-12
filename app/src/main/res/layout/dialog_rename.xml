@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Original file name"
+        android:text="@string/message_original_file_name"
         android:id="@+id/textView5" />
 
     <EditText
@@ -22,7 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Small Text"
+        android:text="@string/message_new_file_name"
         android:id="@+id/textView6" />
 
     <EditText
@@ -41,14 +41,14 @@
         <com.gc.materialdesign.views.ButtonFlat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="rename"
+            android:text="@string/rename"
             android:background="@color/colorPrimary"
             android:id="@+id/btnRename" />
 
         <com.gc.materialdesign.views.ButtonFlat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="cancel"
+            android:text="@android:string/cancel"
             android:background="@color/colorAccent"
             android:id="@+id/btnCancel" />
     </LinearLayout>

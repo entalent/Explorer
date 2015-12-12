@@ -28,14 +28,11 @@ public class FTPServerActivity extends BaseActivity implements FtpHelper.FtpServ
             ftpService = ((FtpService.FtpServiceBinder)service).getService();
             ftpHelper = ftpService.getFtpHelper();
             if(ftpHelper == null) {
-                Toast.makeText(FTPServerActivity.this, "failed to create FTP server", Toast.LENGTH_SHORT).show();
+                Toast.makeText(FTPServerActivity.this, getString(R.string.message_ftp_fail), Toast.LENGTH_SHORT).show();
                 finish();
             }
             ftpHelper.addListener(FTPServerActivity.this);
-            Toast.makeText(FTPServerActivity.this, "service connected", Toast.LENGTH_SHORT).show();
-            textView.setText(ftpHelper.isServerRunning() ?
-                    "server running\n input ftp://" + NetworkUtil.getIPAddress(FTPServerActivity.this) + ":2221 to manage files" :
-                    "server stopped");
+            refreshState();
         }
 
         @Override
@@ -52,7 +49,7 @@ public class FTPServerActivity extends BaseActivity implements FtpHelper.FtpServ
         buttonLaunch = (Button) findViewById(R.id.btn_launch);
         textView = (TextView)findViewById(R.id.textView);
 
-        setTitle("FTP Server");
+        setTitle(getString(R.string.title_activity_ftp_server));
 
         Intent intent = new Intent(FTPServerActivity.this, FtpService.class);
         startService(intent);
@@ -69,19 +66,34 @@ public class FTPServerActivity extends BaseActivity implements FtpHelper.FtpServ
                     ftpHelper.startServer();
             }
         });
-
     }
 
     @Override
     public void onServerStartFinish(boolean running) {
         if(running)
-            textView.setText("server running\n input ftp://" + NetworkUtil.getIPAddress(FTPServerActivity.this) + ":2221 to manage files");
+            textView.setText(String.format(getString(R.string.message_ftp_started), NetworkUtil.getIPAddress(FTPServerActivity.this)));
         else
-            textView.setText("failed to start server");
+            textView.setText(getString(R.string.message_ftp_fail));
+        refreshState();
     }
 
     @Override
     public void onServerStop() {
-        textView.setText("server stopped");
+        textView.setText(getString(R.string.message_ftp_stopped));
+        refreshState();
+    }
+
+    public void refreshState() {
+        if(NetworkUtil.isWifiConnected(FTPServerActivity.this)) {
+            buttonLaunch.setClickable(true);
+            if (ftpHelper.isServerRunning()) {
+                buttonLaunch.setText(getString(R.string.message_stop_ftp));
+            } else {
+                buttonLaunch.setText(getString(R.string.message_start_ftp));
+            }
+        } else {
+            buttonLaunch.setClickable(false);
+            buttonLaunch.setText(getString(R.string.message_wlan_not_connected));
+        }
     }
 }

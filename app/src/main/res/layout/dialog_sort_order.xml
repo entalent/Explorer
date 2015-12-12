@@ -20,19 +20,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/sortByName"
-            android:text="sort by name"/>
+            android:text="@string/message_sort_by_name"/>
 
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/sortBySize"
-            android:text="sort by size"/>
+            android:text="@string/message_sort_by_size"/>
 
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/sortByLastModified"
-            android:text="sort by last modified time"/>
+            android:text="@string/message_sort_by_last_modified"/>
     </RadioGroup>
 
 </LinearLayout>

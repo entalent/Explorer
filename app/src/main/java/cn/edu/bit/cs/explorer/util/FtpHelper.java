@@ -105,17 +105,17 @@ public class FtpHelper {
         if(server.isStopped()) {
             try {
                 server.start();
+                serverRunnning = true;
                 for(FtpServerListener i : listeners) {
                     i.onServerStartFinish(true);
                 }
-                serverRunnning = true;
                 return true;
             } catch (FtpException e) {
                 e.printStackTrace();
+                serverRunnning = false;
                 for(FtpServerListener i : listeners) {
                     i.onServerStartFinish(false);
                 }
-                serverRunnning = false;
                 return false;
             }
         }

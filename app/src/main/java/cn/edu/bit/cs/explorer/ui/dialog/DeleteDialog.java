@@ -17,7 +17,7 @@ public class DeleteDialog extends android.app.Dialog {
 
     public DeleteDialog(Context context) {
         super(context);
-        setTitle("delete");
+        setTitle(context.getString(R.string.message_delete));
         setContentView(R.layout.dialog_delete);
 
         deleteInfoText = (TextView)findViewById(R.id.deleteInfoText);

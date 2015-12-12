@@ -8,6 +8,7 @@ import com.gc.materialdesign.widgets.Dialog;
 import java.io.File;
 import java.util.ArrayList;
 
+import cn.edu.bit.cs.explorer.R;
 import cn.edu.bit.cs.explorer.util.ZipUtil;
 
 /**
@@ -27,7 +28,7 @@ public class ZipTask extends FileAsyncTask {
             return ZipUtil.zip(filesToOperate, targetZipFile);
         } catch (Exception e) {
             e.printStackTrace();
-            Dialog dialog = new Dialog(context, "Error", "Exception while compressing file");
+            Dialog dialog = new Dialog(context, service.getString(R.string.error), service.getString(R.string.compress_error));
             dialog.show();
             dialog.show();
             return 0;
@@ -38,10 +39,10 @@ public class ZipTask extends FileAsyncTask {
     protected void onPostExecute(Integer integer) {
         super.onPostExecute(integer);
 
-        final Dialog dialog = new Dialog(context, "Compress finish", "would you like to view compressed file?");
-        dialog.addCancelButton("no");
+        final Dialog dialog = new Dialog(context, service.getString(R.string.compress_finish), service.getString(R.string.message_compress_finish));
+        dialog.addCancelButton(service.getString(android.R.string.no));
         dialog.show();
-        dialog.getButtonAccept().setText("yes");
+        dialog.getButtonAccept().setText(service.getString(android.R.string.yes));
         dialog.setOnAcceptButtonClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

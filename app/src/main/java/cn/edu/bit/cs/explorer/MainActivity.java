@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity
             if(PackageManager.PERMISSION_GRANTED !=
                     checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 Toast.makeText(MainActivity.this,
-                        "You must grant the permission of reading file system to use this app.",
+                        getString(R.string.permission_request_message_main),
                         Toast.LENGTH_LONG).show();
                 String[] permissions = {
                         Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -259,7 +259,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         menu.clear();
         //groupID itemID order
-        menu.add(0, 0, 0, "sort order");
+        menu.add(0, 0, 0, getString(R.string.menu_item_sort_order));
         return true;
     }
 
@@ -315,20 +315,20 @@ public class MainActivity extends AppCompatActivity
 
                 case STATE_SELECT_FILE:
                     menu.clear();
-                    menu.add(0, MENUITEM_ID_COPY, 0, "copy").setIcon(R.drawable.ic_content_copy_white_18dp).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
-                    menu.add(0, MENUITEM_ID_CUT, 1, "cut").setIcon(R.drawable.ic_content_cut_white_18dp).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
-                    menu.add(0, MENUITEM_ID_DELETE, 2, "delete").setIcon(R.drawable.ic_delete_white_18dp).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                    menu.add(0, MENUITEM_ID_COPY, 0, getString(R.string.menu_item_copy)).setIcon(R.drawable.ic_content_copy_white_18dp).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                    menu.add(0, MENUITEM_ID_CUT, 1, getString(R.string.menu_item_cut)).setIcon(R.drawable.ic_content_cut_white_18dp).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                    menu.add(0, MENUITEM_ID_DELETE, 2, getString(R.string.menu_item_delete)).setIcon(R.drawable.ic_delete_white_18dp).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
                     if (selectedFiles != null && selectedFiles.size() == 1) {
-                        menu.add(0, MENUITEM_ID_DELETE, 3, "rename").setIcon(R.drawable.ic_create_white_18dp).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+                        menu.add(0, MENUITEM_ID_DELETE, 3, getString(R.string.menu_item_rename)).setIcon(R.drawable.ic_create_white_18dp).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
                     }
-                    menu.add(0, MENUITEM_ID_SELECT_ALL, 4, "select all").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
-                    menu.add(0, MENUITEM_ID_COMPRESS, 5, "compress").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
-                    menu.add(0, MENUITEM_ID_SHARE, 6, "share").setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                    menu.add(0, MENUITEM_ID_SELECT_ALL, 4, getString(R.string.menu_item_select_all)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
+                    menu.add(0, MENUITEM_ID_COMPRESS, 5, getString(R.string.menu_item_compress)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
+                    menu.add(0, MENUITEM_ID_SHARE, 6, getString(R.string.menu_item_share)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
                     break;
 
                 case STATE_PASTE:
                     menu.clear();
-                    menu.add(0, MENUITEM_ID_PASTE, 0, "paste").setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                    menu.add(0, MENUITEM_ID_PASTE, 0, getString(R.string.menu_item_paste)).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
                     break;
             }
 
@@ -344,7 +344,6 @@ public class MainActivity extends AppCompatActivity
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             int id = item.getItemId();
             if(id == MENUITEM_ID_COPY){
-                Toast.makeText(MainActivity.this, "copy", Toast.LENGTH_SHORT).show();
                 pasteBin.clear();
                 pasteBin.addAll(selectedFiles);
                 pasteBinAction = ACTION_COPY;
@@ -359,7 +358,7 @@ public class MainActivity extends AppCompatActivity
             else if(id == MENUITEM_ID_DELETE){
                 final DeleteDialog dialog = new DeleteDialog(MainActivity.this);
                 dialog.show();
-                dialog.getDeleteInfoText().setText("delete selected " + selectedFiles.size() + " files ?");
+                dialog.getDeleteInfoText().setText(String.format(getString(R.string.message_delete_confirm), selectedFiles.size()));
                 dialog.getButtonCancel().setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -388,9 +387,9 @@ public class MainActivity extends AppCompatActivity
                     public void onClick(View v) {
                         File newFile = new File(originalFile.getParent() + File.separator + dialog.getNewNameText().getText());
                         if (originalFile.renameTo(newFile)) {
-                            Toast.makeText(MainActivity.this, "rename success", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.message_rename_success), Toast.LENGTH_SHORT).show();
                         } else {
-                            Toast.makeText(MainActivity.this, "rename fail", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.message_rename_fail), Toast.LENGTH_SHORT).show();
                         }
 
                         clearSelectedAndRefrfesh();
@@ -432,7 +431,7 @@ public class MainActivity extends AppCompatActivity
                         intent.setType(TextUtil.getMimeTypeFromFile(selectedFiles.get(0)));
                         intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(selectedFiles.get(0)));
                     }
-                    startActivity(Intent.createChooser(intent, "share"));
+                    startActivity(Intent.createChooser(intent, getString(R.string.message_share)));
             }
 
 
@@ -448,7 +447,6 @@ public class MainActivity extends AppCompatActivity
     ServiceConnection conn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            Toast.makeText(MainActivity.this, "service connected", Toast.LENGTH_SHORT).show();
             mainService = ((MainService.MainServiceBinder)service).getService();
         }
 
@@ -567,7 +565,7 @@ public class MainActivity extends AppCompatActivity
     private void executeNewFile() {
         final NewFileOrFolderDialog dialog = new NewFileOrFolderDialog(MainActivity.this);
         dialog.show();
-        dialog.setTitle("new file");
+        dialog.setTitle(getString(R.string.message_new_file));
         dialog.getCancelBtn().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -584,12 +582,13 @@ public class MainActivity extends AppCompatActivity
                     try {
                         newFile.createNewFile();
                         fragment.refreshCurrentContent();
+                        Toast.makeText(MainActivity.this, getString(R.string.message_rename_success), Toast.LENGTH_SHORT).show();
                     } catch (IOException e) {
-                        Toast.makeText(MainActivity.this, "failed to create new file", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, getString(R.string.message_rename_fail), Toast.LENGTH_SHORT).show();
                     }
 
                 } else {
-
+                    Toast.makeText(MainActivity.this, getString(R.string.message_file_already_exists), Toast.LENGTH_SHORT).show();
                 }
                 dialog.dismiss();
                 hideSmallButton();
