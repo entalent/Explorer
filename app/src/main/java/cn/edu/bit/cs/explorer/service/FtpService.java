@@ -6,9 +6,9 @@ import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
 
-import org.apache.ftpserver.ConnectionConfig;
 import org.apache.ftpserver.usermanager.impl.BaseUser;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import cn.edu.bit.cs.explorer.util.FtpHelper;
@@ -19,15 +19,10 @@ import cn.edu.bit.cs.explorer.util.FtpHelper;
 public class FtpService extends Service {
 
     Binder binder = new FtpServiceBinder();
-    FtpHelper ftpHelper = new FtpHelper();
+    FtpHelper ftpHelper = null;
 
     public FtpService() {
-        ArrayList<BaseUser> users = new ArrayList<>();
-        BaseUser user = new BaseUser();
-        user.setName("anonymous");
-        user.setHomeDirectory(Environment.getExternalStorageDirectory().getAbsolutePath());
-        users.add(user);
-        ftpHelper.addUsers(users);
+
     }
 
     @Override
@@ -46,6 +41,16 @@ public class FtpService extends Service {
     public class FtpServiceBinder extends Binder {
         public FtpService getService() {
             return FtpService.this;
+        }
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        try {
+            ftpHelper = new FtpHelper(FtpService.this);
+        } catch (IOException e) {
+            e.printStackTrace(System.out);
         }
     }
 

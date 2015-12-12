@@ -28,6 +28,7 @@ public class MainService extends Service {
 
     static {
         SINGLE_TASK_EXECUTOR = Executors.newSingleThreadExecutor();
+
         SINGLE_TASK_EXECUTOR.submit(new Runnable() {
             @Override
             public void run() {
@@ -41,6 +42,8 @@ public class MainService extends Service {
     private Queue<FileAsyncTask> tasks = new LinkedList<>();
     boolean isExecuting = false;
 
+    int tasksToExecute = 0;
+
     public MainService() {
 
     }
@@ -53,10 +56,7 @@ public class MainService extends Service {
     void beginExecute() {
         isExecuting = true;
 
-        Intent i1 = new Intent();
-        i1.setAction(getString(R.string.action_main_service));
-        i1.putExtra("action", ACTION_SHOW_PROGRESS);
-        sendBroadcast(i1);
+
 
         while(!tasks.isEmpty()){
             final FileAsyncTask taskToExecute;
@@ -69,10 +69,7 @@ public class MainService extends Service {
             taskToExecute.executeOnExecutor(SINGLE_TASK_EXECUTOR);
         }
 
-        Intent i2 = new Intent();
-        i2.setAction(getString(R.string.action_main_service));
-        i2.putExtra("action", ACTION_HIDE_PROGRESS);
-        sendBroadcast(i2);
+
 
         isExecuting = false;
     }
@@ -115,5 +112,25 @@ public class MainService extends Service {
         intent.putExtra("action", ACTION_GOTO_DIRECTORY);
         intent.putExtra("file", directoryToGo);
         sendBroadcast(intent);
+    }
+
+    public void addTasksToExecute() {
+        tasksToExecute++;
+        if(tasksToExecute == 1) {
+            Intent i1 = new Intent();
+            i1.setAction(getString(R.string.action_main_service));
+            i1.putExtra("action", ACTION_SHOW_PROGRESS);
+            sendBroadcast(i1);
+        }
+    }
+
+    public void subTasksToExecute() {
+        tasksToExecute--;
+        if(tasksToExecute == 0) {
+            Intent i2 = new Intent();
+            i2.setAction(getString(R.string.action_main_service));
+            i2.putExtra("action", ACTION_HIDE_PROGRESS);
+            sendBroadcast(i2);
+        }
     }
 }

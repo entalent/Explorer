@@ -2,6 +2,7 @@ package cn.edu.bit.cs.explorer.util.tasks;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,5 +35,17 @@ public abstract class FileAsyncTask extends AsyncTask<String, Integer, Integer> 
 
     public void setServiceRef(MainService service) {
         this.service = service;
+    }
+
+    @Override
+    protected void onPostExecute(Integer aInteger) {
+        super.onPostExecute(aInteger);
+        service.subTasksToExecute();
+    }
+
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        service.addTasksToExecute();
     }
 }

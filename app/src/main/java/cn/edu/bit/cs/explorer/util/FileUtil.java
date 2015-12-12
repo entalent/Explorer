@@ -113,11 +113,6 @@ public class FileUtil {
     }
 
     public static int deleteFile (File file) {
-        try {
-            Thread.sleep(1000);
-        }catch (InterruptedException e) {
-
-        }
         if(file.isDirectory()){
             int cnt = 0;
             File[] files = file.listFiles();
