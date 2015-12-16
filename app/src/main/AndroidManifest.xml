@@ -29,6 +29,14 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.EDIT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/zip"/>
+                <data android:scheme="file"/>
+            </intent-filter>
         </activity>
         <activity android:name=".SearchActivity" >
         </activity>
@@ -53,6 +61,9 @@
             android:enabled="true"
             android:exported="true" >
         </service>
+
+        <activity android:name=".EditorActivity" >
+        </activity>
     </application>
 
 </manifest>

@@ -17,6 +17,8 @@
         android:layout_height="wrap_content"
         android:id="@+id/textView"
         android:layout_centerVertical="true"
+        android:text="@string/message_ftp_stopped"
+        android:gravity="center"
         android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

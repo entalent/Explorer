@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import cn.edu.bit.cs.explorer.ui.customview.FileListItem;
+import cn.edu.bit.cs.explorer.util.FileUtil;
 
 public class SearchActivity extends BaseActivity {
 
@@ -71,9 +72,10 @@ public class SearchActivity extends BaseActivity {
                 keyWord = editText.getText().toString();
                 if (keyWord.isEmpty()) {
                     editText.setError("keyword should not be empty");
+                } else {
+                    searchTask = new SearchTask();
+                    searchTask.executeOnExecutor(SINGLE_TASK_EXECUTOR);
                 }
-                searchTask = new SearchTask();
-                searchTask.executeOnExecutor(SINGLE_TASK_EXECUTOR);
                 //TODO: cancel task in onDestroy() ?
             }
         });
@@ -99,8 +101,10 @@ public class SearchActivity extends BaseActivity {
                 FileListItem item = (FileListItem) convertView;
                 if (item == null)
                     item = new FileListItem(SearchActivity.this, null);
+                //item.setDetailType(FileListItem.TYPE_PATH);
                 item.setFile(searchResult.get(position));
                 item.getCheckBox().setVisibility(View.GONE);
+
                 return item;
             }
         });
@@ -108,7 +112,7 @@ public class SearchActivity extends BaseActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //TODO: open file here
+                FileUtil.openFile(SearchActivity.this, searchResult.get(position));
             }
         });
 
@@ -148,6 +152,9 @@ public class SearchActivity extends BaseActivity {
             ArrayList<File> searchResult = new ArrayList<>();
             searchQueue.add(currentDir);
             while(!searchQueue.isEmpty()) {
+                if(isCancelled()) {
+                    return 0;
+                }
                 File dir = searchQueue.poll();
                 File[] files = dir.listFiles();
                 if(files == null){
@@ -175,5 +182,11 @@ public class SearchActivity extends BaseActivity {
 
     boolean judgeFile(File file) {
         return (file.getName().contains(keyWord));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        searchTask.cancel(true);
     }
 }

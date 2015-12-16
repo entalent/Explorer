@@ -1,5 +1,8 @@
 package cn.edu.bit.cs.explorer.util;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 
 import com.gc.materialdesign.views.ProgressBarIndeterminate;
@@ -17,6 +20,15 @@ public class FileUtil {
 
     public static boolean isChildDirectoty(File parentDirectory, File childDirectory) {
         return childDirectory.getAbsolutePath().startsWith(parentDirectory.getAbsolutePath());
+    }
+
+    public static void openFile(Context context, File file) {
+        Intent intent = new Intent();
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setAction(android.content.Intent.ACTION_VIEW);
+        String type = TextUtil.getMimeTypeFromFile(file);
+        intent.setDataAndType(Uri.fromFile(file), type);
+        context.startActivity(intent);
     }
 
     public static int cutFile(File srcFile, File dstPath, IFileUtil handler)

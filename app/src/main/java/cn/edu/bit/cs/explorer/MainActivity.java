@@ -3,6 +3,7 @@ package cn.edu.bit.cs.explorer;
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -22,6 +23,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.ActionMode;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,6 +32,7 @@ import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.gc.materialdesign.views.ButtonFloat;
@@ -54,6 +57,7 @@ import cn.edu.bit.cs.explorer.util.TextUtil;
 import cn.edu.bit.cs.explorer.util.tasks.DeleteTask;
 import cn.edu.bit.cs.explorer.util.tasks.FileAsyncTask;
 import cn.edu.bit.cs.explorer.util.tasks.PasteTask;
+import cn.edu.bit.cs.explorer.util.tasks.UnzipTask;
 import cn.edu.bit.cs.explorer.util.tasks.ZipTask;
 
 public class MainActivity extends AppCompatActivity
@@ -105,6 +109,7 @@ public class MainActivity extends AppCompatActivity
     boolean smallButtonShowing = false;
 
     MainService mainService;
+    ArrayList<FileAsyncTask> tasksToExecute = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,6 +170,7 @@ public class MainActivity extends AppCompatActivity
 
         fragment.setRootDir(Environment.getExternalStorageDirectory());
         fragment.setFileListListener(MainActivity.this);
+        registerForContextMenu((ListView) fragment.getAdapterView());
 
         indicator.setRootDir(Environment.getExternalStorageDirectory());
         indicator.setOnPathChangeListener(MainActivity.this);
@@ -212,6 +218,18 @@ public class MainActivity extends AppCompatActivity
                 startActivity(i);
             }
         });
+
+        Intent intent = getIntent();
+        Toast.makeText(MainActivity.this, intent.getAction(), Toast.LENGTH_SHORT).show();
+        //android.intent.action.VIEW
+        if(intent.getAction().equals(Intent.ACTION_VIEW)) {
+            String scheme = intent.getScheme();
+            if(scheme.equals(ContentResolver.SCHEME_FILE)) {
+                Uri uri = intent.getData();
+                File file = new File(uri.getPath());
+                executeUnzip(file);
+            }
+        }
     }
 
     @Override
@@ -226,12 +244,7 @@ public class MainActivity extends AppCompatActivity
         if(file.isDirectory())
             indicator.setCurrentDir(file);
         else {
-            Intent intent = new Intent();
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.setAction(android.content.Intent.ACTION_VIEW);
-            String type = TextUtil.getMimeTypeFromFile(file);
-            intent.setDataAndType(Uri.fromFile(file), type);
-            startActivity(intent);
+            FileUtil.openFile(MainActivity.this, file);
         }
     }
 
@@ -251,6 +264,31 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onItemLongClick(File file) {
+        Toast.makeText(MainActivity.this, file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+        
+    }
+
+    long prevBackPressedTime = 0, currentBackPressedTime;
+
+    @Override
+    public void onBackPressed() {
+        if(smallButtonShowing) {
+            hideSmallButton();
+        } else if(drawerLayout.isDrawerOpen(GravityCompat.START)){
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else if(!fragment.goToParentDir()){
+            currentBackPressedTime = System.currentTimeMillis();
+            if(currentBackPressedTime - prevBackPressedTime <= 1500) {
+                finish();
+            } else {
+                Toast.makeText(MainActivity.this, "press back once again to exit", Toast.LENGTH_SHORT).show();
+            }
+            prevBackPressedTime = currentBackPressedTime;
+        }
+    }
+
+    @Override
     public void onPathChange(File file) {
         fragment.setCurrentDir(file);
     }
@@ -261,6 +299,12 @@ public class MainActivity extends AppCompatActivity
         //groupID itemID order
         menu.add(0, 0, 0, getString(R.string.menu_item_sort_order));
         return true;
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        menu.add("context menu item");
     }
 
     @Override
@@ -318,9 +362,11 @@ public class MainActivity extends AppCompatActivity
                     menu.add(0, MENUITEM_ID_COPY, 0, getString(R.string.menu_item_copy)).setIcon(R.drawable.ic_content_copy_white_18dp).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
                     menu.add(0, MENUITEM_ID_CUT, 1, getString(R.string.menu_item_cut)).setIcon(R.drawable.ic_content_cut_white_18dp).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
                     menu.add(0, MENUITEM_ID_DELETE, 2, getString(R.string.menu_item_delete)).setIcon(R.drawable.ic_delete_white_18dp).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                    /*
                     if (selectedFiles != null && selectedFiles.size() == 1) {
                         menu.add(0, MENUITEM_ID_DELETE, 3, getString(R.string.menu_item_rename)).setIcon(R.drawable.ic_create_white_18dp).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
                     }
+                    */
                     menu.add(0, MENUITEM_ID_SELECT_ALL, 4, getString(R.string.menu_item_select_all)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
                     menu.add(0, MENUITEM_ID_COMPRESS, 5, getString(R.string.menu_item_compress)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
                     menu.add(0, MENUITEM_ID_SHARE, 6, getString(R.string.menu_item_share)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
@@ -448,11 +494,22 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mainService = ((MainService.MainServiceBinder)service).getService();
+            if(tasksToExecute != null) {
+                for(FileAsyncTask i : tasksToExecute) {
+                    mainService.addTask(i);
+                }
+            }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             mainService = null;
+            if(tasksToExecute != null && tasksToExecute.size() > 0) {
+                Intent intent = new Intent(MainActivity.this, MainService.class);
+                startService(intent);
+                bindService(intent, conn, BIND_AUTO_CREATE);
+            }
+
         }
     };
 
@@ -518,19 +575,22 @@ public class MainActivity extends AppCompatActivity
         actionMode = toolbar.startActionMode(actionModeCallback);
     }
 
-    private void executePaste() {
-        FileAsyncTask task = new PasteTask(MainActivity.this, fragment.getCurrentDir(), pasteBin, pasteBinAction);
+    private void executeTask(FileAsyncTask task) {
         if(mainService != null){
             mainService.addTask(task);
+        } else {
+            tasksToExecute.add(task);
         }
+    }
 
+    private void executePaste() {
+        FileAsyncTask task = new PasteTask(MainActivity.this, fragment.getCurrentDir(), pasteBin, pasteBinAction);
+        executeTask(task);
     }
 
     private void executeDelete() {
         FileAsyncTask task = new DeleteTask(MainActivity.this, fragment.getCurrentDir(), selectedFiles);
-        if(mainService != null) {
-            mainService.addTask(task);
-        }
+        executeTask(task);
     }
 
     private void executeNewFolder() {
@@ -578,7 +638,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 File newFile = new File(fragment.getCurrentDir() + File.separator + dialog.getNewFileNameText().getText().toString());
-                if(!newFile.exists()) {
+                if (!newFile.exists()) {
                     try {
                         newFile.createNewFile();
                         fragment.refreshCurrentContent();
@@ -610,9 +670,25 @@ public class MainActivity extends AppCompatActivity
         File zipFile = new File(zipDir + File.separator + zipFileName);
         System.out.println("compress " + zipFile.getAbsolutePath());
         ZipTask zipTask = new ZipTask(MainActivity.this, fragment.getCurrentDir(), selectedFiles, zipFile);
-        if(mainService != null) {
-            mainService.addTask(zipTask);
-        }
+        executeTask(zipTask);
+    }
+
+    private void executeUnzip(File file) {
+        Toast.makeText(MainActivity.this, "unzip", Toast.LENGTH_SHORT).show();
+        ArrayList<File> files = new ArrayList<>();
+        files.add(file);
+        File unzipDir = new File(
+                getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS) + File.separator +
+                        "unzippedFile" + File.separator
+        );
+
+        unzipDir.mkdirs();
+
+        UnzipTask task = new UnzipTask(MainActivity.this,
+                unzipDir,
+                files);
+        Toast.makeText(MainActivity.this, (mainService == null) + "", Toast.LENGTH_SHORT).show();
+        executeTask(task);
     }
 
     private void showSmallButtons() {
@@ -628,7 +704,7 @@ public class MainActivity extends AppCompatActivity
 
 
         Animation rotateAnim = new RotateAnimation(0f, 45f,Animation.RELATIVE_TO_SELF, 0.5f,Animation.RELATIVE_TO_SELF,0.5f);
-        rotateAnim.setDuration(700);
+        rotateAnim.setDuration(300);
         rotateAnim.setFillBefore(true);
         rotateAnim.setFillAfter(true);
         addButton.startAnimation(rotateAnim);
@@ -648,8 +724,7 @@ public class MainActivity extends AppCompatActivity
         searchBtn.setVisibility(View.INVISIBLE);
 
         Animation rotateAnim = new RotateAnimation(45f, 0f,Animation.RELATIVE_TO_SELF, 0.5f,Animation.RELATIVE_TO_SELF,0.5f);
-        rotateAnim.setDuration(700);
-        //FIXME: animation ?!
+        rotateAnim.setDuration(300);
         rotateAnim.setFillBefore(true);
         rotateAnim.setFillAfter(true);
         addButton.startAnimation(rotateAnim);

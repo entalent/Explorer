@@ -56,5 +56,6 @@ dependencies {
     compile files('libs/slf4j-api-1.5.2.jar')
     compile files('libs/mina-core-2.0.4.jar')
     compile files('libs/slf4j-log4j12-1.5.2.jar')
+    compile files('libs/ant.jar')
 }
 
