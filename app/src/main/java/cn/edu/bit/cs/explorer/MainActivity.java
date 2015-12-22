@@ -23,7 +23,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.ActionMode;
-import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -54,11 +53,11 @@ import cn.edu.bit.cs.explorer.ui.fragment.BaseFileListFragment;
 import cn.edu.bit.cs.explorer.util.FileUtil;
 import cn.edu.bit.cs.explorer.util.StorageUtil;
 import cn.edu.bit.cs.explorer.util.TextUtil;
-import cn.edu.bit.cs.explorer.util.tasks.DeleteTask;
-import cn.edu.bit.cs.explorer.util.tasks.FileAsyncTask;
-import cn.edu.bit.cs.explorer.util.tasks.PasteTask;
-import cn.edu.bit.cs.explorer.util.tasks.UnzipTask;
-import cn.edu.bit.cs.explorer.util.tasks.ZipTask;
+import cn.edu.bit.cs.explorer.tasks.DeleteTask;
+import cn.edu.bit.cs.explorer.tasks.FileAsyncTask;
+import cn.edu.bit.cs.explorer.tasks.PasteTask;
+import cn.edu.bit.cs.explorer.tasks.UnzipTask;
+import cn.edu.bit.cs.explorer.tasks.ZipTask;
 
 public class MainActivity extends AppCompatActivity
         implements BaseFileListFragment.FileListListener, PathIndicator.OnPathChangeListener,
@@ -78,7 +77,8 @@ public class MainActivity extends AppCompatActivity
                     MENUITEM_ID_DELETE = 0x5,
             MENUITEM_ID_SHARE = 0x6,
             MENUITEM_ID_COMPRESS = 0x7,
-            MENUITEM_ID_SELECT_ALL = 0x8;
+            MENUITEM_ID_SELECT_ALL = 0x8,
+            MENUITEM_ID_DESELECT_ALL = 0x10;
 
     public static int REQUEST_CODE_STORAGE_PERMISSIONS = 1000000007;
 
@@ -251,12 +251,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onSelectedFilesChange(ArrayList<File> files) {
         this.selectedFiles = files;
-        if(prevSelectedFileCnt == 0 &&
-                files.size() > 0) {
+        if((prevSelectedFileCnt == 0 && files.size() > 0) ||
+                (prevSelectedFileCnt == 1 && files.size() > 1) ||
+                (prevSelectedFileCnt > 1 && files.size() == 1) ||
+                (prevSelectedFileCnt > 0 && files.size() > 0)) {
             actionModeState = STATE_SELECT_FILE;
             actionMode = toolbar.startActionMode(actionModeCallback);
-        } else if(prevSelectedFileCnt > 0 && files.size() > 0) {
-            actionMode.invalidate();
         } else if(files.size() == 0 && pasteBin.size() == 0) {
             actionMode.finish();
         }
@@ -282,7 +282,7 @@ public class MainActivity extends AppCompatActivity
             if(currentBackPressedTime - prevBackPressedTime <= 1500) {
                 finish();
             } else {
-                Toast.makeText(MainActivity.this, "press back once again to exit", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, getString(R.string.message_press_again_to_exit), Toast.LENGTH_SHORT).show();
             }
             prevBackPressedTime = currentBackPressedTime;
         }
@@ -296,23 +296,26 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         menu.clear();
-        //groupID itemID order
         menu.add(0, 0, 0, getString(R.string.menu_item_sort_order));
+        menu.add(0, 1, 1, getString(R.string.menu_item_select_all));
+        menu.add(0, 2, 2, getString(R.string.menu_item_deselect_all));
         return true;
-    }
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        menu.add("context menu item");
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == 0) {
-            SortOrderDialog dialog = new SortOrderDialog(MainActivity.this);
-            fragment.setSortMethod(dialog.showDialog());
+        switch(id) {
+            case 0:
+                SortOrderDialog dialog = new SortOrderDialog(MainActivity.this);
+                fragment.setSortMethod(dialog.showDialog());
+                break;
+            case 1:
+                fragment.selectAll();
+                break;
+            case 2:
+                fragment.deselectAll();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -321,10 +324,12 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem menuItem) {
         int id = menuItem.getItemId();
         switch(id) {
+            /*
             case R.id.item_settings:
                 Intent i = new Intent(MainActivity.this, SettingsActivity.class);
                 startActivity(i);
                 break;
+                */
             case R.id.item_adbw:
                 Intent i2 = new Intent(MainActivity.this, AdbWifiActivity.class);
                 startActivity(i2);
@@ -362,12 +367,11 @@ public class MainActivity extends AppCompatActivity
                     menu.add(0, MENUITEM_ID_COPY, 0, getString(R.string.menu_item_copy)).setIcon(R.drawable.ic_content_copy_white_18dp).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
                     menu.add(0, MENUITEM_ID_CUT, 1, getString(R.string.menu_item_cut)).setIcon(R.drawable.ic_content_cut_white_18dp).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
                     menu.add(0, MENUITEM_ID_DELETE, 2, getString(R.string.menu_item_delete)).setIcon(R.drawable.ic_delete_white_18dp).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
-                    /*
-                    if (selectedFiles != null && selectedFiles.size() == 1) {
-                        menu.add(0, MENUITEM_ID_DELETE, 3, getString(R.string.menu_item_rename)).setIcon(R.drawable.ic_create_white_18dp).setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+                    if(selectedFiles.size() == 1) {
+                        menu.add(0, MENUITEM_ID_RENAME, 3, getString(R.string.menu_item_rename)).setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
                     }
-                    */
                     menu.add(0, MENUITEM_ID_SELECT_ALL, 4, getString(R.string.menu_item_select_all)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
+                    menu.add(0, MENUITEM_ID_DESELECT_ALL, 5, getString(R.string.menu_item_deselect_all)).setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
                     menu.add(0, MENUITEM_ID_COMPRESS, 5, getString(R.string.menu_item_compress)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
                     menu.add(0, MENUITEM_ID_SHARE, 6, getString(R.string.menu_item_share)).setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
                     break;
@@ -422,37 +426,14 @@ public class MainActivity extends AppCompatActivity
                     }
                 });
             }
-            else if(id == MENUITEM_ID_RENAME){
-                final RenameDialog dialog = new RenameDialog(MainActivity.this);
-                dialog.show();
-                final File originalFile = selectedFiles.get(0);
-                dialog.getOriginalNameText().setText(originalFile.getName());
-                dialog.getNewNameText().setText(originalFile.getName());
-                dialog.getButtonAccept().setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        File newFile = new File(originalFile.getParent() + File.separator + dialog.getNewNameText().getText());
-                        if (originalFile.renameTo(newFile)) {
-                            Toast.makeText(MainActivity.this, getString(R.string.message_rename_success), Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(MainActivity.this, getString(R.string.message_rename_fail), Toast.LENGTH_SHORT).show();
-                        }
-
-                        clearSelectedAndRefrfesh();
-                        dialog.dismiss();
-                        fragment.refreshCurrentContent();
-                    }
-                });
-                dialog.getButtonCancel().setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        clearSelectedAndRefrfesh();
-                        dialog.dismiss();
-                    }
-                });
-            }
             else if(id == MENUITEM_ID_SELECT_ALL){
                 fragment.selectAll();
+            }
+            else if(id == MENUITEM_ID_DESELECT_ALL){
+                fragment.deselectAll();
+            }
+            else if(id == MENUITEM_ID_RENAME) {
+                executeRename(selectedFiles.get(0));
             }
             else if(id == MENUITEM_ID_COMPRESS){
                 executeCompress();
@@ -480,13 +461,12 @@ public class MainActivity extends AppCompatActivity
                     startActivity(Intent.createChooser(intent, getString(R.string.message_share)));
             }
 
-
             return true;
         }
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
-            fragment.deselectAll();
+            //fragment.deselectAll();
         }
     };
 
@@ -609,7 +589,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 File newFile = new File(fragment.getCurrentDir() + File.separator + dialog.getNewFileNameText().getText().toString());
-                if(!newFile.exists() && newFile.mkdir()) {
+                if (!newFile.exists() && newFile.mkdir()) {
                     fragment.refreshCurrentContent();
                 } else {
                     Toast.makeText(MainActivity.this, "failed to create new folder", Toast.LENGTH_SHORT).show();
@@ -619,6 +599,35 @@ public class MainActivity extends AppCompatActivity
                 fragment.refreshCurrentContent();
             }
 
+        });
+    }
+
+    private void executeRename(final File originalFile) {
+        final RenameDialog dialog = new RenameDialog(MainActivity.this);
+        dialog.show();
+        dialog.getOriginalNameText().setText(originalFile.getName());
+        dialog.getNewNameText().setText(originalFile.getName());
+        dialog.getButtonAccept().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                File newFile = new File(originalFile.getParent() + File.separator + dialog.getNewNameText().getText());
+                if (originalFile.renameTo(newFile)) {
+                    Toast.makeText(MainActivity.this, getString(R.string.message_rename_success), Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MainActivity.this, getString(R.string.message_rename_fail), Toast.LENGTH_SHORT).show();
+                }
+
+                clearSelectedAndRefrfesh();
+                dialog.dismiss();
+                fragment.refreshCurrentContent();
+            }
+        });
+        dialog.getButtonCancel().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clearSelectedAndRefrfesh();
+                dialog.dismiss();
+            }
         });
     }
 
@@ -704,7 +713,7 @@ public class MainActivity extends AppCompatActivity
 
 
         Animation rotateAnim = new RotateAnimation(0f, 45f,Animation.RELATIVE_TO_SELF, 0.5f,Animation.RELATIVE_TO_SELF,0.5f);
-        rotateAnim.setDuration(300);
+        rotateAnim.setDuration(100);
         rotateAnim.setFillBefore(true);
         rotateAnim.setFillAfter(true);
         addButton.startAnimation(rotateAnim);
@@ -724,7 +733,7 @@ public class MainActivity extends AppCompatActivity
         searchBtn.setVisibility(View.INVISIBLE);
 
         Animation rotateAnim = new RotateAnimation(45f, 0f,Animation.RELATIVE_TO_SELF, 0.5f,Animation.RELATIVE_TO_SELF,0.5f);
-        rotateAnim.setDuration(300);
+        rotateAnim.setDuration(100);
         rotateAnim.setFillBefore(true);
         rotateAnim.setFillAfter(true);
         addButton.startAnimation(rotateAnim);

@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.Looper;
-import android.widget.Toast;
 
 import java.io.File;
 import java.util.LinkedList;
@@ -14,8 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import cn.edu.bit.cs.explorer.R;
-import cn.edu.bit.cs.explorer.util.tasks.FileAsyncTask;
-import cn.edu.bit.cs.explorer.util.tasks.ZipTask;
+import cn.edu.bit.cs.explorer.tasks.FileAsyncTask;
 
 public class MainService extends Service {
 

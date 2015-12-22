@@ -1,4 +1,4 @@
-package cn.edu.bit.cs.explorer.util;
+package cn.edu.bit.cs.explorer.network;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;

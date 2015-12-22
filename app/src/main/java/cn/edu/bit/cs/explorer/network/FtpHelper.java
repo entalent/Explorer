@@ -1,9 +1,6 @@
-package cn.edu.bit.cs.explorer.util;
+package cn.edu.bit.cs.explorer.network;
 
 import android.content.Context;
-import android.os.Environment;
-
-import com.gc.materialdesign.views.ProgressBarIndeterminate;
 
 import org.apache.ftpserver.ConnectionConfig;
 import org.apache.ftpserver.FtpServer;
@@ -12,7 +9,6 @@ import org.apache.ftpserver.ftplet.FtpException;
 import org.apache.ftpserver.listener.ListenerFactory;
 import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
 import org.apache.ftpserver.usermanager.impl.BaseUser;
-import org.apache.ftpserver.usermanager.impl.PropertiesUserManager;
 
 import java.io.File;
 import java.io.FileOutputStream;

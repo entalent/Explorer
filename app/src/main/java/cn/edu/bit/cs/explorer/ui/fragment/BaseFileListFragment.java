@@ -1,5 +1,6 @@
 package cn.edu.bit.cs.explorer.ui.fragment;
 
+import android.app.Activity;
 import android.location.GpsStatus;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -14,10 +15,13 @@ import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.apache.log4j.chainsaw.Main;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import cn.edu.bit.cs.explorer.MainActivity;
 import cn.edu.bit.cs.explorer.R;
 import cn.edu.bit.cs.explorer.ui.customview.FileListItem;
 import cn.edu.bit.cs.explorer.util.BaseFileComparator;
@@ -28,7 +32,7 @@ import cn.edu.bit.cs.explorer.util.FileUtil;
  * Created by entalent on 2015/11/11.
  */
 public class BaseFileListFragment extends Fragment
-    implements CompoundButton.OnCheckedChangeListener, View.OnClickListener, View.OnLongClickListener,
+    implements CompoundButton.OnCheckedChangeListener, View.OnClickListener, //View.OnLongClickListener,
         SwipeRefreshLayout.OnRefreshListener {
 
     public static final int SORT_BY_NAME = 0x0,
@@ -101,7 +105,6 @@ public class BaseFileListFragment extends Fragment
             item.setTag(new Integer(position));
             item.getCheckBox().setTag(new Integer(position));
             item.setOnClickListener(BaseFileListFragment.this);
-            item.setOnLongClickListener(BaseFileListFragment.this);
             item.getCheckBox().setOnCheckedChangeListener(BaseFileListFragment.this);
             return item;
         }
@@ -136,22 +139,17 @@ public class BaseFileListFragment extends Fragment
     }
 
     @Override
-    public boolean onLongClick(View v) {
-        int pos = (Integer)v.getTag();
-        if(!isInRootDir && pos == 0)
-            return false;
-        listener.onItemLongClick(filesInCurrentDir.get(pos - (isInRootDir ? 0 : 1)));
-        return true;
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_file_list, container, false);
         adapterView = (ListView)rootView.findViewById(R.id.listView);
         swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipelayout);
         swipeRefreshLayout.setOnRefreshListener(this);
-        swipeRefreshLayout.setColorScheme(android.R.color.holo_blue_bright, android.R.color.holo_green_light,
-                android.R.color.holo_orange_light, android.R.color.holo_red_light);
+        swipeRefreshLayout.setColorScheme(new int[]{
+                android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light}
+        );
 
 
         adapterView.setAdapter(new FileListAdapter());
@@ -161,12 +159,8 @@ public class BaseFileListFragment extends Fragment
         return rootView;
     }
 
-    private void refreshView() {
-        ((BaseAdapter)adapterView.getAdapter()).notifyDataSetChanged();
-    }
-
     public void refreshCurrentSelected() {
-        refreshView();
+        ((BaseAdapter)adapterView.getAdapter()).notifyDataSetChanged();
     }
 
     public void refreshCurrentContent() {
@@ -199,7 +193,6 @@ public class BaseFileListFragment extends Fragment
             for (File i : files) {
                 filesInCurrentDir.add(i);
             }
-            //TODO: changeable comparator
             Collections.sort(filesInCurrentDir, comparator);
         }
         ((BaseAdapter)adapterView.getAdapter()).notifyDataSetChanged();
@@ -258,7 +251,7 @@ public class BaseFileListFragment extends Fragment
         return currentDir;
     }
 
-    public boolean isSelectedFile(File file) {
+    private boolean isSelectedFile(File file) {
         for(File i : selectedFiles){
             if(i.getAbsolutePath().equals(file.getAbsolutePath()))
                 return true;

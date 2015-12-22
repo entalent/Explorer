@@ -1,10 +1,12 @@
-package cn.edu.bit.cs.explorer.util;
+package cn.edu.bit.cs.explorer.network;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+
+import cn.edu.bit.cs.explorer.util.TextUtil;
 
 /**
  * Created by entalent on 2015/12/5.

@@ -36,6 +36,7 @@
     <string name="menu_item_compress">Compress</string>
     <string name="menu_item_share">Share</string>
     <string name="menu_item_delete">Delete</string>
+    <string name="menu_item_deselect_all">Deselect All</string>
 
     <string name="message_delete_confirm">delete selected %d file(s) ?</string>
     <string name="message_rename_success">rename success</string>
@@ -63,6 +64,7 @@
     <string name="message_sort_by_name">sort by name</string>
     <string name="message_sort_by_size">sort by size</string>
     <string name="message_sort_by_last_modified">sort by last modified time</string>
+    <string name="message_press_again_to_exit">Press back once again to exit</string>
     
     <string name="message_ftp_fail">failed to create FTP server</string>
     <string name="message_ftp_stopped">FTP server stopped</string>
@@ -82,4 +84,5 @@
     <string name="compress_error">error while compressing</string>
     <string name="compress_finish">compress finish</string>
     <string name="message_compress_finish">would you like to view compressed file?</string>
+    <string name="title_activity_file_property" translatable="false">FilePropertyActivity</string>
 </resources>

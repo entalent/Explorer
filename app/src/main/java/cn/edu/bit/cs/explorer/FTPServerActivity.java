@@ -11,8 +11,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import cn.edu.bit.cs.explorer.service.FtpService;
-import cn.edu.bit.cs.explorer.util.FtpHelper;
-import cn.edu.bit.cs.explorer.util.NetworkUtil;
+import cn.edu.bit.cs.explorer.network.FtpHelper;
+import cn.edu.bit.cs.explorer.network.NetworkUtil;
 
 public class FTPServerActivity extends BaseActivity implements FtpHelper.FtpServerListener {
 

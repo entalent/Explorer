@@ -65,4 +65,7 @@
     <string name="message_pasted_files">已粘贴 %d 个文件</string>
     <string name="compress_error">压缩时出现错误</string>
     <string name="compress_finish">压缩完成</string>
+    <string name="menu_item_deselect_all">全不选</string>
+    <string name="message_press_again_to_exit">再按一次返回键退出</string>
+    <string name="title_activity_file_property"></string>
 </resources>

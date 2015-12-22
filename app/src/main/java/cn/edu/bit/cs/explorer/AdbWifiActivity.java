@@ -11,8 +11,8 @@ import android.widget.Toast;
 
 import java.io.IOException;
 
-import cn.edu.bit.cs.explorer.util.AdbUtil;
-import cn.edu.bit.cs.explorer.util.NetworkUtil;
+import cn.edu.bit.cs.explorer.network.AdbUtil;
+import cn.edu.bit.cs.explorer.network.NetworkUtil;
 
 /**
  * Created by entalent on 2015/12/5.

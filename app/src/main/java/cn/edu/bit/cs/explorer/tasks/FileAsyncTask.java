@@ -1,8 +1,7 @@
-package cn.edu.bit.cs.explorer.util.tasks;
+package cn.edu.bit.cs.explorer.tasks;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;

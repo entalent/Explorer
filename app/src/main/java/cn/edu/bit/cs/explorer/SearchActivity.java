@@ -187,6 +187,7 @@ public class SearchActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        searchTask.cancel(true);
+        if(searchTask != null)
+            searchTask.cancel(true);
     }
 }
