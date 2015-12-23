@@ -35,6 +35,11 @@ public class AdbUtil {
             process.waitFor();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        } finally {
+
+            if(dataOutputStream != null) {
+                dataOutputStream.close();
+            }
         }
         process.destroy();
     }

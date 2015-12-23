@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.gc.materialdesign.views.ProgressBarIndeterminate;
 
@@ -28,7 +29,11 @@ public class FileUtil {
         intent.setAction(android.content.Intent.ACTION_VIEW);
         String type = TextUtil.getMimeTypeFromFile(file);
         intent.setDataAndType(Uri.fromFile(file), type);
-        context.startActivity(intent);
+        try {
+            context.startActivity(intent);
+        } catch (Exception e){
+            Toast.makeText(context, "unable to open file", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public static int cutFile(File srcFile, File dstPath, IFileUtil handler)
